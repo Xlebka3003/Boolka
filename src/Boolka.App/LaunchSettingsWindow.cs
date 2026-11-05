@@ -39,7 +39,7 @@ internal sealed class LaunchSettingsWindow : Window
         var save = ActionButton("Сохранить", Save);
         DockPanel.SetDock(save, Dock.Right);
         footer.Children.Add(save);
-        error.SetResourceReference(ForegroundProperty, "Theme.F1BDA9");
+        error.SetResourceReference(ForegroundProperty, "State.Error");
         error.Margin = new Thickness(0, 0, 12, 0);
         footer.Children.Add(error);
         var body = new StackPanel();
@@ -109,7 +109,7 @@ internal sealed class LaunchSettingsWindow : Window
             if (path is null || !File.Exists(path) || !LaunchProgram.Supported(path))
             {
                 var missing = Label("Не найден — выберите файл.", 13);
-                missing.SetResourceReference(ForegroundProperty, "Theme.F1BDA9");
+                missing.SetResourceReference(ForegroundProperty, "State.Warning");
                 panel.Children.Add(missing);
             }
             if (program.Kind != "custom" && program.Path.Length == 0) panel.Children.Add(Label("Автопоиск в папке AddOns", 12));

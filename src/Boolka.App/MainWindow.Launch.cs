@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 
 namespace Boolka;
@@ -6,6 +6,14 @@ namespace Boolka;
 public partial class MainWindow
 {
     private bool launching;
+
+    private void UpdateLaunchButton()
+    {
+        LaunchButton.IsEnabled = !busy && !launching;
+        LaunchLabel.Text = UiText.Get(launching ? "Запускаем…" : "Запустить ESO");
+        LaunchButton.ToolTip = LaunchLabel.Text;
+        System.Windows.Automation.AutomationProperties.SetName(LaunchButton, LaunchLabel.Text);
+    }
 
     private void ConfigureLaunch(object sender, RoutedEventArgs e) => OpenLaunchSettings();
 
@@ -25,7 +33,7 @@ public partial class MainWindow
         if (!preferences.LaunchConfigured && !OpenLaunchSettings()) return;
         launching = true;
         SetBusy(true);
-        LaunchButton.IsEnabled = false;
+
         try
         {
             var report = await LaunchSequence.RunAsync(preferences, currentFolder, new LaunchProcessRunner(),
@@ -34,7 +42,7 @@ public partial class MainWindow
             SavePreferences();
             SetStatus(UiText.Get("Запуск ESO передан системе. Актуальность баз не подтверждена."));
             if (report.Warnings.Count > 0)
-                SetStatus(StatusLabel.Text + " " + UiText.Get("Пропущено: ") + string.Join(" · ", report.Warnings), needsAttention: true);
+                SetStatus(StatusLabel.Text + " " + UiText.Get("Пропущено: ") + string.Join(" | ", report.Warnings), warning: true);
         }
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
         catch (Exception ex) when (LaunchSequence.IsLaunchError(ex))
@@ -46,7 +54,7 @@ public partial class MainWindow
         {
             launching = false;
             SetBusy(false);
-            LaunchButton.IsEnabled = true;
+
         }
     }
 }

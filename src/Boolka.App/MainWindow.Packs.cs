@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Net.Http;
 using System.Windows;
 using Microsoft.Win32;
@@ -42,7 +42,7 @@ public partial class MainWindow
         var save = new SaveFileDialog
         {
             Title = UiText.Get("Сохранить набор"),
-            Filter = "boolka pack (*.boolka)|*.boolka",
+            Filter = "Boolka pack (*.boolka)|*.boolka",
             DefaultExt = ".boolka",
             AddExtension = true,
             FileName = "addons.boolka",
@@ -60,7 +60,7 @@ public partial class MainWindow
     private async void ImportPack(object sender, RoutedEventArgs e)
     {
         if (busy || currentFolder is null) return;
-        var open = new OpenFileDialog { Title = UiText.Get("Импорт набора"), Filter = "boolka pack (*.boolka)|*.boolka", Multiselect = false };
+        var open = new OpenFileDialog { Title = UiText.Get("Импорт набора"), Filter = "Boolka pack (*.boolka)|*.boolka", Multiselect = false };
         if (open.ShowDialog(this) != true) return;
         try { await PreviewPackImportAsync(PackFile.Read(open.FileName)); }
         catch (OperationCanceledException ex)
@@ -82,44 +82,64 @@ public partial class MainWindow
         return path;
     }
 
-    private async Task PreviewPackImportAsync(AddonPack pack)
+    private async Task PreviewPackImportAsync(AddonPack pack, bool retryMissing = false)
     {
         if (!await LoadPackContextAsync()) return;
-        var rawPlan = PackPlanner.Build(pack, catalog, installed, (preferences.IgnoredIds ?? []).ToHashSet());
+        if (retryMissing)
+        {
+            // Повтор строим по свежему сканированию, а не по прежнему списку ошибок.
+            pack = PackPlanner.MissingOnly(pack, catalog, installed);
+            if (pack.Addons.Count == 0)
+            {
+                SetStatus(UiText.Get("Недостающих пакетов для установки нет."));
+                return;
+            }
+        }
         var directory = Path.Combine(Path.GetTempPath(), "boolka-pack-review-" + Guid.NewGuid().ToString("N"));
         var archives = new Dictionary<long, string>();
         try
         {
             Directory.CreateDirectory(directory);
             using var operation = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
-            PreparedPack prepared;
-            BeginOperation();
-            SetBusy(true, UiText.Get("Проверяем состав набора и каталог ESOUI…"));
-            try
+            while (true)
             {
-                prepared = await PackArchivePlanner.PrepareAsync(pack, catalog, installed,
-                    (preferences.IgnoredIds ?? []).ToHashSet(), archives,
-                    package => DownloadPackArchiveAsync(package, directory, operation.Token), operation.Token);
-                catalog = prepared.Catalog;
-                ApplyComparisons();
-            }
-            finally { EndOperation(); SetBusy(false); Refresh(); }
-            var plan = prepared.Plan;
-            var approval = new PackImportApproval(pack, plan.Fingerprint, currentFolder!)
-            { CatalogFingerprint = rawPlan.Fingerprint, Archives = archives };
-            var review = new PackReviewWindow(this, pack, plan);
-            if (review.ShowDialog() != true)
-            {
-                if (review.EditRequested)
+                var rawPlan = PackPlanner.Build(pack, catalog, installed, (preferences.IgnoredIds ?? []).ToHashSet());
+                PreparedPack prepared;
+                BeginOperation();
+                SetBusy(true, UiText.Get("Проверяем состав набора и каталог ESOUI…"));
+                try
                 {
-                    var choices = pack.Addons.Concat(installed.Where(x => x.PreviewId is > 0).Select(x => new PackAddon(x.PreviewId!.Value, x.DisplayName)))
-                        .DistinctBy(x => x.Id).OrderBy(x => x.Name).ToArray();
-                    var editor = new PackExportWindow(this, choices, 0, pack);
-                    if (editor.ShowDialog() == true && editor.Result is { } edited) SavePackToFile(edited);
+                    prepared = await PackArchivePlanner.PrepareAsync(pack, catalog, installed,
+                        (preferences.IgnoredIds ?? []).ToHashSet(), archives,
+                        package => DownloadPackArchiveAsync(package, directory, operation.Token), operation.Token);
+                    catalog = prepared.Catalog;
+                    ApplyComparisons();
                 }
+                finally { EndOperation(); SetBusy(false); Refresh(); }
+                var plan = prepared.Plan;
+                var approval = new PackImportApproval(pack, plan.Fingerprint, currentFolder!)
+                { CatalogFingerprint = rawPlan.Fingerprint, Archives = archives };
+                var review = new PackReviewWindow(this, pack, plan);
+                if (review.ShowDialog() != true)
+                {
+                    if (review.EditRequested)
+                    {
+                        var choices = pack.Addons.Concat(installed.Where(x => x.PreviewId is > 0).Select(x => new PackAddon(x.PreviewId!.Value, x.DisplayName)))
+                            .DistinctBy(x => x.Id).OrderBy(x => x.Name).ToArray();
+                        var editor = new PackExportWindow(this, choices, 0, pack);
+                        if (editor.ShowDialog() == true && editor.Result is { } edited) SavePackToFile(edited);
+                    }
+                    return;
+                }
+                if (review.SelectionChanged)
+                {
+                    // Новый выбор требует нового проверенного плана и отдельного согласования.
+                    pack = review.SelectedPack;
+                    continue;
+                }
+                await ExecuteInstallationAsync(null, false, batch: true, packImport: approval);
                 return;
             }
-            await ExecuteInstallationAsync(null, false, batch: true, packImport: approval);
         }
         finally
         {

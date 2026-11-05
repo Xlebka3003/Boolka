@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media.Imaging;
 
 namespace Boolka;
@@ -9,10 +10,10 @@ public sealed class SettingsWindow : Window
     private TextBlock? diagnosticInfo;
     private Button? diagnosticButton;
 
-    internal void SetDiagnosticStatus(string text) { if (diagnosticInfo is not null) diagnosticInfo.Text = text; }
+    internal void SetDiagnosticStatus(string text) { if (diagnosticInfo is not null) diagnosticInfo.Text = $"({text})"; }
     internal void SetDiagnosticBusy(bool busy) { if (diagnosticButton is not null) diagnosticButton.IsEnabled = !busy; }
 
-    public SettingsWindow(Window owner, AppPreferences preferences, Action<string, string, string> apply, Action openBackups, bool backupsAvailable, Action? saveDiagnostics = null, Action? openLaunchSettings = null, Action<bool>? setStartupUpdates = null)
+    public SettingsWindow(Window owner, AppPreferences preferences, Action<string, string> apply, Action openBackups, bool backupsAvailable, Action? saveDiagnostics = null, Action? openLaunchSettings = null, Action<bool>? setStartupUpdates = null)
     {
         if (owner.IsVisible) Owner = owner;
         Width = 600;
@@ -22,14 +23,9 @@ public sealed class SettingsWindow : Window
         ResizeMode = ResizeMode.CanResize;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         SetResourceReference(BackgroundProperty, "Theme.10131B");
-        Text(this, TitleProperty, "boolka · Настройки");
+        Text(this, TitleProperty, "Boolka · Настройки");
         var panel = new StackPanel { Margin = new Thickness(24) };
         Content = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
-        var title = Label("Настройки", 25);
-        title.TextAlignment = TextAlignment.Center;
-        title.FontWeight = FontWeights.SemiBold;
-        title.Margin = new Thickness(0, 0, 0, 20);
-        panel.Children.Add(title);
         var appearance = Section(panel, "Внешний вид");
         appearance.Children.Add(Label("Язык", 14));
         var language = new ComboBox { HorizontalContentAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 8, 0, 8) };
@@ -66,13 +62,6 @@ public sealed class SettingsWindow : Window
             theme.Items.Add(item);
         }
         appearance.Children.Add(theme);
-        appearance.Children.Add(Label("Изображения модов", 14));
-        var previews = new ComboBox { HorizontalContentAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 8, 0, 8), SelectedIndex = preferences.PreviewMode == "icons" ? 0 : 1 };
-        foreach (var label in new[] { "Иконки", "Изображения" })
-        {
-            var item = new ComboBoxItem(); Text(item, ContentControl.ContentProperty, label); previews.Items.Add(item);
-        }
-        appearance.Children.Add(previews);
         var startup = Section(panel, "Обновления и запуск");
         var startupUpdates = new CheckBox
         {
@@ -93,9 +82,7 @@ public sealed class SettingsWindow : Window
         Text(backups, ContentControl.ContentProperty, "Резервные копии");
         backups.Click += (_, _) => openBackups();
 
-        backups.Margin = new Thickness(0, 0, 8, 8);
-        data.Children.Add(backups);
-        var diagnostics = new Button { HorizontalAlignment = HorizontalAlignment.Left, IsEnabled = saveDiagnostics is not null, Margin = new Thickness(0, 0, 0, 8) };
+        var diagnostics = new Button { HorizontalAlignment = HorizontalAlignment.Left, IsEnabled = saveDiagnostics is not null };
         diagnosticButton = diagnostics;
         Text(diagnostics, ContentControl.ContentProperty, "Сохранить журнал");
         diagnostics.Click += (_, _) => saveDiagnostics?.Invoke();
@@ -105,15 +92,8 @@ public sealed class SettingsWindow : Window
         launch.Click += (_, _) => openLaunchSettings?.Invoke();
         startup.Children.Add(launch);
 
-        var explanation = Label("Создавайте полные копии модов и настроек или восстанавливайте их из сохранённого состояния.", 13);
-        explanation.TextWrapping = TextWrapping.Wrap;
-        explanation.Margin = new Thickness(0, 2, 0, 16);
-        data.Children.Add(explanation);
-        data.Children.Add(diagnostics);
-        diagnosticInfo = Label("При ошибке сохраните журнал и отправьте его разработчику. Автоматической отправки нет.", 13);
-        diagnosticInfo.TextWrapping = TextWrapping.Wrap;
-        diagnosticInfo.Margin = new Thickness(0, 2, 0, 0);
-        data.Children.Add(diagnosticInfo);
+        AddHintRow(data, backups, "Создавайте полные копии модов и настроек или восстанавливайте их из сохранённого состояния.");
+        diagnosticInfo = AddHintRow(data, diagnostics, "При ошибке сохраните журнал и отправьте его разработчику. Автоматической отправки нет.");
         var developerPanel = new StackPanel();
         var developerCard = new Border
         {
@@ -172,12 +152,33 @@ public sealed class SettingsWindow : Window
         void ApplySelection()
         {
             var code = (language.SelectedItem as ComboBoxItem)?.Tag as string ?? "en";
-            apply(code, SelectedTheme(), previews.SelectedIndex == 0 ? "icons" : "images");
+            apply(code, SelectedTheme());
         }
         language.SelectionChanged += (_, _) => ApplySelection();
         theme.SelectionChanged += (_, _) => ApplySelection();
-        previews.SelectionChanged += (_, _) => ApplySelection();
         DialogChrome.Apply(this);
+    }
+
+    private static TextBlock AddHintRow(Panel parent, Button button, string text)
+    {
+        var row = new Grid { Margin = new Thickness(0, 0, 0, 12) };
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        button.VerticalAlignment = VerticalAlignment.Center;
+        button.Margin = new Thickness(0, 0, 12, 0);
+        row.Children.Add(button);
+        var hint = new TextBlock { FontSize = 12, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
+        hint.SetResourceReference(TextBlock.ForegroundProperty, "Muted");
+        hint.Inlines.Add(new Run("("));
+        var translated = new Run();
+        UiResources.Register(text);
+        translated.SetResourceReference(Run.TextProperty, UiText.ResourceKey(text));
+        hint.Inlines.Add(translated);
+        hint.Inlines.Add(new Run(")"));
+        Grid.SetColumn(hint, 1);
+        row.Children.Add(hint);
+        parent.Children.Add(row);
+        return hint;
     }
 
     private static StackPanel Section(Panel parent, string heading)

@@ -8,10 +8,13 @@ public sealed class LucideIcon : FrameworkElement
 {
     public static readonly DependencyProperty IconProperty = DependencyProperty.Register(nameof(Icon), typeof(string), typeof(LucideIcon),
         new FrameworkPropertyMetadata("square", FrameworkPropertyMetadataOptions.AffectsRender));
+    public static readonly DependencyProperty IsFilledProperty = DependencyProperty.Register(nameof(IsFilled), typeof(bool), typeof(LucideIcon),
+        new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
     public static readonly DependencyProperty ForegroundProperty = TextElement.ForegroundProperty.AddOwner(typeof(LucideIcon),
         new FrameworkPropertyMetadata(Brushes.White, FrameworkPropertyMetadataOptions.Inherits | FrameworkPropertyMetadataOptions.AffectsRender));
 
     public string Icon { get => (string)GetValue(IconProperty); set => SetValue(IconProperty, value); }
+    public bool IsFilled { get => (bool)GetValue(IsFilledProperty); set => SetValue(IsFilledProperty, value); }
     public Brush Foreground { get => (Brush)GetValue(ForegroundProperty); set => SetValue(ForegroundProperty, value); }
 
     public LucideIcon()
@@ -29,7 +32,7 @@ public sealed class LucideIcon : FrameworkElement
         var pen = new Pen(Foreground, 2) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };
         drawing.PushTransform(new TranslateTransform((ActualWidth - size) / 2, (ActualHeight - size) / 2));
         drawing.PushTransform(new ScaleTransform(size / 24, size / 24));
-        drawing.DrawGeometry(null, pen, LucideGeometry.Get(Icon));
+        drawing.DrawGeometry(IsFilled ? Foreground : null, pen, LucideGeometry.Get(Icon));
         drawing.Pop();
         drawing.Pop();
     }

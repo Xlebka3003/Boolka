@@ -22,7 +22,7 @@ public sealed class SettingsStore
         catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
         {
             AppLog.Error("ui.operation.failed", ex);
-            migrationWarning = "Не удалось перенести прежние настройки в boolka: " + ex.Message;
+            migrationWarning = "Не удалось перенести прежние настройки в Boolka: " + ex.Message;
         }
     }
 

@@ -15,6 +15,7 @@
 /docs/*
 !/docs/screenshots/
 !/docs/releases/
+!/docs/UI_STYLE.md
 !/.github/
 
 **/bin/

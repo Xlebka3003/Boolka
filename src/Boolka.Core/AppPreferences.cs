@@ -3,17 +3,24 @@ using System.Text.Json;
 
 namespace Boolka;
 
-public sealed record AppPreferences(bool CompactRows = true, int CatalogFilter = 0, long[]? IgnoredIds = null,
-    string Language = "en", string Theme = "dracula", bool? SquareCorners = true, long CategoryId = 0, bool ReverseSort = false, int SortIndex = 1, long InstalledCategoryId = 0, string PreviewMode = "icons", double CollectionScale = 1, bool? DescendingSort = null, int TileColumns = 4, double DescriptionScale = 1, bool LaunchConfigured = false, bool LaunchSteam = true, string GameExecutable = "", bool LaunchTtc = true, bool LaunchHarvest = true, string HarvestPreparationStamp = "", LaunchProgram[]? LaunchPrograms = null, bool AutoUpdateAddonsOnStartup = false);
+public sealed record AppPreferences(int CatalogFilter = 0, long[]? IgnoredIds = null,
+    string Language = "en", string Theme = "dracula", bool? SquareCorners = true, long CategoryId = 0, bool ReverseSort = false, int SortIndex = 1, long InstalledCategoryId = 0, double CollectionScale = 1, bool? DescendingSort = null, double DescriptionScale = 1, bool LaunchConfigured = false, bool LaunchSteam = true, string GameExecutable = "", bool LaunchTtc = true, bool LaunchHarvest = true, string HarvestPreparationStamp = "", LaunchProgram[]? LaunchPrograms = null, bool AutoUpdateAddonsOnStartup = false);
 
 public sealed class PreferencesStore(string path)
 {
+    public bool NeedsViewPreferenceCleanup { get; private set; }
     public AppPreferences Load()
     {
+        NeedsViewPreferenceCleanup = false;
         try
         {
             if (!File.Exists(path) || new FileInfo(path).Length > 256 * 1024) return new();
-            var value = JsonSerializer.Deserialize<AppPreferences>(File.ReadAllText(path)) ?? new();
+            var text = File.ReadAllText(path);
+            var value = JsonSerializer.Deserialize<AppPreferences>(text) ?? new();
+            using var document = JsonDocument.Parse(text);
+            // Значения старых режимов больше не используются; наличие полей запускает только очистку схемы.
+            NeedsViewPreferenceCleanup = document.RootElement.ValueKind == JsonValueKind.Object
+                && new[] { "CompactRows", "PreviewMode", "TileColumns" }.Any(key => document.RootElement.TryGetProperty(key, out _));
             return value with
             {
                 LaunchPrograms = value.LaunchPrograms is null ? null : LaunchProgram.Normalize(value.LaunchPrograms),
@@ -22,10 +29,8 @@ public sealed class PreferencesStore(string path)
                 CatalogFilter = Math.Clamp(value.CatalogFilter, 0, 2),
                 CategoryId = Math.Max(0, value.CategoryId),
                 InstalledCategoryId = Math.Max(-1, value.InstalledCategoryId),
-                PreviewMode = value.PreviewMode == "images" ? "images" : "icons",
                 CollectionScale = double.IsFinite(value.CollectionScale) ? Math.Clamp(value.CollectionScale, 0.5, 1.5) : 1,
                 SortIndex = Math.Clamp(value.SortIndex, 0, 2),
-                TileColumns = Math.Clamp(value.TileColumns, 1, 8),
                 // Сохраняем прежний фактический порядок выбранного поля при переходе на единое направление.
                 DescendingSort = value.DescendingSort ?? ((Math.Clamp(value.SortIndex, 0, 2) != 0) != value.ReverseSort),
                 Language = UiLanguages.Normalize(value.Language),
@@ -51,6 +56,7 @@ public sealed class PreferencesStore(string path)
         {
             File.WriteAllText(temporary, JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true }));
             File.Move(temporary, path, true);
+            NeedsViewPreferenceCleanup = false;
         }
         finally
         {

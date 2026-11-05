@@ -9,7 +9,7 @@
     <!-- FocusVisualStyle показывается WPF при клавиатурной навигации, а не после клика. -->
     <Style x:Key="KeyboardFocus" TargetType="Control">
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Control">
-        <Border BorderBrush="{DynamicResource Theme.B7A4FF}" BorderThickness="1" CornerRadius="{DynamicResource Theme.Radius5}" Margin="1" IsHitTestVisible="False" />
+        <Border BorderBrush="{DynamicResource State.Accent}" BorderThickness="1" CornerRadius="{DynamicResource Theme.Radius5}" Margin="1" IsHitTestVisible="False" />
       </ControlTemplate></Setter.Value></Setter>
     </Style>
     <Style TargetType="TextBox"><Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocus}" /><Setter Property="AcceptsTab" Value="False" /></Style>
@@ -219,7 +219,7 @@
         <Border x:Name="Item" BorderBrush="{DynamicResource Theme.353C4E}" BorderThickness="{TemplateBinding BorderThickness}" Padding="8,7" Background="Transparent">
           <Grid>
             <Grid.ColumnDefinitions><ColumnDefinition Width="20" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-            <TextBlock x:Name="SelectedMark" Text="✓" VerticalAlignment="Center" Visibility="Hidden" Foreground="{DynamicResource Theme.7DDDC0}" />
+            <TextBlock x:Name="SelectedMark" Text="✓" VerticalAlignment="Center" Visibility="Hidden" Foreground="{DynamicResource State.Accent}" />
             <ContentPresenter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
           </Grid>
         </Border>
@@ -277,6 +277,8 @@
     <Style
       TargetType="Button">
       <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Theme.353C4E}" />
       <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocus}" />
       <Setter
         Property="Foreground"
@@ -298,7 +300,7 @@
         <Setter.Value>
           <ControlTemplate
             TargetType="Button">
-            <Grid>
+            <Grid x:Name="ButtonRoot">
               <Border
                 x:Name="Body"
                 Background="{TemplateBinding Background}"
@@ -316,44 +318,77 @@
               </Border>
               <Border
                 x:Name="ClassicOutline"
-                BorderBrush="{DynamicResource Theme.ButtonOutline}"
+                BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="1"
                 CornerRadius="{DynamicResource Theme.Radius8}"
                 IsHitTestVisible="False" />
-
+              <Border x:Name="HoverOverlay" Background="{DynamicResource State.Hover}" Opacity="0" IsHitTestVisible="False" />
             </Grid>
             <ControlTemplate.Triggers>
-              <Trigger Property="IsPressed" Value="True">
-                <Setter TargetName="Body" Property="Background" Value="{DynamicResource Theme.353044}" />
-              </Trigger>
               <Trigger
                 Property="IsMouseOver"
                 Value="True">
                 <Setter
-                  TargetName="Body"
+                  TargetName="HoverOverlay"
                   Property="Opacity"
-                  Value="0.8" />
+                  Value="0.06" />
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="HoverOverlay" Property="Opacity" Value="0.12" />
               </Trigger>
               <Trigger
                 Property="IsEnabled"
                 Value="False">
                 <Setter
-                  TargetName="Body"
+                  TargetName="ButtonRoot"
                   Property="Opacity"
-                  Value="0.4" />
+                  Value="0.45" />
               </Trigger>
+
 
               <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
-                  <Condition Binding="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" Value="AddonInstallAction" />
-                  <Condition Binding="{Binding DataContext.IsIgnoredStatus, RelativeSource={RelativeSource TemplatedParent}}" Value="True" />
+                  <Condition Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="AddonInstallAction" />
+                  <Condition Binding="{Binding CanInstall}" Value="False" />
                 </MultiDataTrigger.Conditions>
-                <Setter TargetName="Body" Property="Opacity" Value="1" />
+                <Setter Property="Visibility" Value="Collapsed" />
               </MultiDataTrigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
       </Setter>
+    </Style>
+    <!-- Галочки используют акцент выбора, а не цвета ошибок или обновлений. -->
+    <Style TargetType="CheckBox">
+      <Setter Property="Foreground" Value="{DynamicResource Theme.E9EDF5}" />
+      <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocus}" />
+      <Setter Property="MinHeight" Value="22" />
+      <Setter Property="Template"><Setter.Value>
+        <ControlTemplate TargetType="CheckBox">
+          <DockPanel x:Name="CheckRoot" LastChildFill="True">
+            <Border x:Name="Box" Width="16" Height="16" Margin="0,2,8,0" VerticalAlignment="Top"
+              Background="Transparent" BorderBrush="{DynamicResource Theme.353C4E}" BorderThickness="1">
+              <Grid>
+                <Path x:Name="Tick" Data="M 3,7 L 6,10 L 12,3" Stroke="{DynamicResource State.OnState}" StrokeThickness="2" Visibility="Collapsed" />
+                <Border x:Name="Mixed" Height="2" Margin="3,0" Background="{DynamicResource State.OnState}" VerticalAlignment="Center" Visibility="Collapsed" />
+              </Grid>
+            </Border>
+            <ContentPresenter ContentSource="Content" RecognizesAccessKey="True" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </DockPanel>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Box" Property="Background" Value="{DynamicResource State.Accent}" />
+              <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource State.Accent}" />
+              <Setter TargetName="Tick" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsChecked" Value="{x:Null}">
+              <Setter TargetName="Box" Property="Background" Value="{DynamicResource State.Accent}" />
+              <Setter TargetName="Mixed" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="CheckRoot" Property="Opacity" Value="0.45" /></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value></Setter>
     </Style>
     <!-- Системный шаблон ListBox окрашивает отключённый список в белый цвет. -->
     <Style
@@ -388,7 +423,7 @@
         Value="0" />
       <Setter
         Property="Margin"
-        Value="0,0,0,8" />
+        Value="0,0,0,4" />
       <Setter
         Property="HorizontalContentAlignment"
         Value="Stretch" />
@@ -401,7 +436,7 @@
               x:Name="Row"
               Background="{DynamicResource Theme.191E29}"
               CornerRadius="{DynamicResource Theme.Radius10}"
-              Padding="18,15"
+              Padding="10,6" MinHeight="60"
               BorderThickness="1"
               BorderBrush="{DynamicResource Theme.262D3C}">
               <ContentPresenter />
@@ -413,53 +448,26 @@
                 <Setter
                   TargetName="Row"
                   Property="BorderBrush"
-                  Value="{DynamicResource Theme.A795EF}" />
+                  Value="{DynamicResource State.Accent}" />
                 <Setter
                   TargetName="Row"
                   Property="Background"
-                  Value="{DynamicResource Theme.26233A}" />
+                  Value="{DynamicResource State.SelectionBackground}" />
               </Trigger>
-              <Trigger
-                Property="IsMouseOver"
-                Value="True">
+              <MultiTrigger>
+                <MultiTrigger.Conditions>
+                  <Condition Property="IsMouseOver" Value="True" />
+                  <Condition Property="IsSelected" Value="False" />
+                </MultiTrigger.Conditions>
                 <Setter
                   TargetName="Row"
                   Property="BorderBrush"
                   Value="{DynamicResource Theme.645B83}" />
-              </Trigger>
-              <DataTrigger
-                Binding="{Binding HasDependencyProblems}"
-                Value="True">
-                <Setter
-                  TargetName="Row"
-                  Property="BorderBrush"
-                  Value="{DynamicResource Theme.D66F7B}" />
-              </DataTrigger>
-              <DataTrigger
-                Binding="{Binding CompactRows, RelativeSource={RelativeSource AncestorType=Window}}"
-                Value="True">
-                <Setter
-                  TargetName="Row"
-                  Property="Padding"
-                  Value="12,6" />
-                <Setter
-                  TargetName="Row"
-                  Property="MinHeight"
-                  Value="64" />
-              </DataTrigger>
+              </MultiTrigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
       </Setter>
-      <Style.Triggers>
-        <DataTrigger
-          Binding="{Binding CompactRows, RelativeSource={RelativeSource AncestorType=Window}}"
-          Value="True">
-          <Setter
-            Property="Margin"
-            Value="0,0,0,4" />
-        </DataTrigger>
-      </Style.Triggers>
     </Style>
     <Style
       x:Key="RoundedScrollThumb"

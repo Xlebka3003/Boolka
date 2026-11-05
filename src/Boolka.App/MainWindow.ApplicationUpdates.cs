@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Automation;
@@ -43,10 +43,11 @@ public partial class MainWindow
     {
         var available = applicationRelease is not null;
         AppUpdateButton.IsEnabled = available && !busy;
-        AppUpdateButton.Foreground = available ? new SolidColorBrush(Color.FromRgb(80, 250, 123)) : ThemeManager.Brush("#9AA3B5");
+        ButtonState.Apply(AppUpdateButton, available ? "Update" : null);
+        if (!available) AppUpdateButton.SetResourceReference(System.Windows.Controls.Control.ForegroundProperty, "Muted");
         var hint = available
-            ? UiText.Format($"Доступна boolka {applicationRelease!.Version}. Нажмите, чтобы скачать и обновить.")
-            : UiText.Get("Проверка обновлений boolka выполняется автоматически.");
+            ? UiText.Format($"Доступна Boolka {applicationRelease!.Version}. Нажмите, чтобы скачать и обновить.")
+            : UiText.Get("Проверка обновлений Boolka выполняется автоматически.");
         AppUpdateButton.ToolTip = hint;
         AutomationProperties.SetHelpText(AppUpdateButton, hint);
     }
@@ -56,7 +57,7 @@ public partial class MainWindow
         if (busy || applicationRelease is null) return;
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
         activeDownload = operation;
-        SetBusy(true, UiText.Get("Проверяем обновление boolka…"));
+        SetBusy(true, UiText.Get("Проверяем обновление Boolka…"));
         BeginOperation();
         try
         {
@@ -65,7 +66,7 @@ public partial class MainWindow
             applicationRelease = release;
             if (release is null)
             {
-                SetStatus(UiText.Get("Проверка обновлений boolka выполняется автоматически."));
+                SetStatus(UiText.Get("Проверка обновлений Boolka выполняется автоматически."));
                 return;
             }
             var executable = Environment.ProcessPath ?? throw new IOException("Не найден исполняемый файл приложения.");
@@ -81,7 +82,7 @@ public partial class MainWindow
                 if (operation.IsCancellationRequested) return;
                 OperationProgress.IsIndeterminate = false;
                 OperationProgress.Value = bytes * 100.0 / release.Size;
-                SetStatus(UiText.Format($"Скачиваем boolka: {bytes / 1048576.0:0.0} из {release.Size / 1048576.0:0.0} МБ"));
+                SetStatus(UiText.Format($"Скачиваем Boolka: {bytes / 1048576.0:0.0} из {release.Size / 1048576.0:0.0} МБ"));
             });
             await applicationReleases.DownloadAsync(release, archive, progress, operation.Token);
             SetStatus(UiText.Get("Проверяем файлы обновления. Приложение перезапустится автоматически."));
@@ -113,12 +114,12 @@ public partial class MainWindow
         }
         catch (OperationCanceledException)
         {
-            if (!lifetime.IsCancellationRequested) SetStatus(UiText.Get("Обновление boolka отменено. Файлы приложения не изменены."));
+            if (!lifetime.IsCancellationRequested) SetStatus(UiText.Get("Обновление Boolka отменено. Файлы приложения не изменены."));
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
             AppLog.Error("app.update.failed", error);
-            if (!lifetime.IsCancellationRequested) SetStatus(UiText.Get("Не удалось обновить boolka: ") + UiError.Describe(error), needsAttention: true);
+            if (!lifetime.IsCancellationRequested) SetStatus(UiText.Get("Не удалось обновить Boolka: ") + UiError.Describe(error), needsAttention: true);
         }
         finally
         {

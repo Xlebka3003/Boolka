@@ -1,6 +1,6 @@
-boolka - Third-party materials
+Boolka - Third-party materials
 
-The PolyForm Noncommercial License 1.0.0 in LICENSE applies to original boolka
+The PolyForm Noncommercial License 1.0.0 in LICENSE applies to original Boolka
 code and documentation. Required Notice: Copyright (c) 2026 Xlebka.
 It does not relicense third-party images, icons, names, or other materials.
 
@@ -15,7 +15,7 @@ Original SVG files and provenance are kept in the source Assets/Lucide folder.
 Category image source: https://api.mmoui.com/v4/game/ESO/categorylist.json
 CDN: https://cdn-eso.mmoui.com/images/icons/
 Game icons: user-supplied ESO and World of Warcraft icon files.
-These materials belong to their respective rights holders. The boolka
+These materials belong to their respective rights holders. The Boolka
 license grants no rights to those materials. Download availability alone does
 not establish redistribution permission. Rights clearance or replacement is
 required before public distribution of assets without a confirmed license.
@@ -23,7 +23,7 @@ Provenance for category images is in Assets/Categories/SOURCES.json in source.
 
 3. Theme palette inspiration
 Dracula: https://draculatheme.com/
-The boolka application uses an independently implemented theme palette.
+The Boolka application uses an independently implemented theme palette.
 
 4. Country flags
 flag-icons v7.5.0: https://github.com/lipis/flag-icons

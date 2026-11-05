@@ -16,10 +16,10 @@
 #ifdef TestAppId
 ; Отдельный AppId не позволяет проверке затронуть установленную пользовательскую boolka.
 AppId={#TestAppId}
-AppName=boolka installer fixture
+AppName=Boolka installer fixture
 #else
 AppId={{DD5CE4EC-EB35-4FC2-A8AB-A4C8CBEC805A}
-AppName=boolka
+AppName=Boolka
 #endif
 AppVersion={#ProductVersion}
 AppPublisher=Xlebka
@@ -27,7 +27,7 @@ AppPublisherURL=https://github.com/Xlebka3003/boolka
 AppSupportURL=https://github.com/Xlebka3003/boolka/issues
 AppUpdatesURL=https://github.com/Xlebka3003/boolka/releases
 DefaultDirName={localappdata}\Programs\boolka
-DefaultGroupName=boolka
+DefaultGroupName=Boolka
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
@@ -50,9 +50,9 @@ UsePreviousTasks=yes
 Uninstallable=yes
 CreateUninstallRegKey=yes
 VersionInfoVersion={#ProductVersion}
-VersionInfoProductName=boolka
+VersionInfoProductName=Boolka
 VersionInfoProductVersion={#ProductVersion}
-VersionInfoDescription=boolka installer
+VersionInfoDescription=Boolka installer
 VersionInfoCopyright=Copyright (c) 2026 Xlebka
 
 [Languages]
@@ -74,9 +74,9 @@ Source: "{#SourceDir}\Licenses\dotnet\Runtime-LICENSE.txt"; DestDir: "{app}\Lice
 Source: "{#SourceDir}\Licenses\dotnet\Runtime-THIRD-PARTY-NOTICES.txt"; DestDir: "{app}\Licenses\dotnet"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\boolka"; Filename: "{app}\boolka.exe"; WorkingDir: "{app}"
-Name: "{autodesktop}\boolka"; Filename: "{app}\boolka.exe"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{group}\Boolka"; Filename: "{app}\boolka.exe"; WorkingDir: "{app}"
+Name: "{autodesktop}\Boolka"; Filename: "{app}\boolka.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
 ; Даже интерактивный запуск требует отдельного выбора. Silent-проверки приложение не запускают.
-Filename: "{app}\boolka.exe"; Description: "{cm:LaunchProgram,boolka}"; WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent unchecked
+Filename: "{app}\boolka.exe"; Description: "{cm:LaunchProgram,Boolka}"; WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent unchecked

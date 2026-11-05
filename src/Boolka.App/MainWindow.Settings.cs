@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 
 namespace Boolka;
@@ -41,18 +41,15 @@ public partial class MainWindow
         dialog.ShowDialog();
     }
 
-    private void ApplyAppearance(string language, string theme) => ApplyPresentation(language, theme, preferences.PreviewMode);
-
-    private void ApplyPresentation(string language, string theme, string previewMode)
+    private void ApplyPresentation(string language, string theme)
     {
-        preferences = preferences with { Language = language, Theme = theme, SquareCorners = true, PreviewMode = previewMode == "icons" ? "icons" : "images" };
+        preferences = preferences with { Language = language, Theme = theme, SquareCorners = true };
         UiResources.Apply(language);
         UpdateCategoryOptions();
         ThemeManager.Apply(theme);
         UpdateApplicationButton();
+        UpdateLaunchButton();
         UpdateFolderChangeButton();
-        CategoryIcons.ApplyMode(preferences.PreviewMode);
-        UpdateViewButtons();
         ApplyCollectionScale();
         ApplyComparisons();
         Refresh();

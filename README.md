@@ -1,4 +1,4 @@
-﻿# boolka
+﻿# Boolka
 
 **Русский** | [English](README.en.md)
 
@@ -6,7 +6,7 @@
 
 ## GIF
 
-![Интерфейс boolka](docs/screenshots/boolka-overview.gif)
+![Интерфейс Boolka](docs/screenshots/boolka-overview.gif)
 
 ## Установка
 

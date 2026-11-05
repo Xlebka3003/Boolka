@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Net.Http;
 using System.Windows;
 
@@ -71,9 +71,9 @@ public partial class MainWindow
         if (errors.Count > 0)
         {
             OperationFailed(new InvalidDataException(string.Join("; ", errors)),
-                packImport is null ? () => ExecuteInstallationAsync(null, librariesOnly, batch: true) : () => PreviewPackImportAsync(packImport.Pack));
-            summary += " · " + string.Join("; ", errors);
+                packImport is null ? () => ExecuteInstallationAsync(null, librariesOnly, batch: true) : () => PreviewPackImportAsync(packImport.Pack, retryMissing: true));
+            summary += " | " + string.Join("; ", errors);
         }
-        SetStatus(summary, needsAttention: errors.Count > 0 || initiallySkipped.Count > 0);
+        SetStatus(summary, needsAttention: errors.Count > 0, warning: initiallySkipped.Count > 0);
     }
 }

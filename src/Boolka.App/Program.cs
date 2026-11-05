@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -85,7 +85,7 @@ internal static class Program
             try
             {
                 using var restarted = Process.Start(new ProcessStartInfo(Path.Combine(plan.Target, "boolka.exe"))
-                { UseShellExecute = false, WorkingDirectory = plan.Target }) ?? throw new IOException("Не удалось перезапустить boolka.");
+                { UseShellExecute = false, WorkingDirectory = plan.Target }) ?? throw new IOException("Не удалось перезапустить Boolka.");
             }
             catch (Exception)
             {
@@ -153,7 +153,7 @@ internal static class Program
     {
         UiText.Language = CultureInfo.CurrentUICulture.Name;
         var message = UiText.Get("Не удалось завершить обновление boolka. Файлы восстановления не удалены.") + "\n\n" + error.Message + "\n\n" + location;
-        MessageBox.Show(message, "boolka", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageBox.Show(message, "Boolka", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
     internal static void RequireUnelevatedUpdate()
@@ -162,6 +162,6 @@ internal static class Program
         // способом передачи кода процессу с повышенными правами через помощник.
         using var identity = WindowsIdentity.GetCurrent();
         if (new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator))
-            throw new UnauthorizedAccessException("Для обновления перезапустите boolka без прав администратора или используйте установщик.");
+            throw new UnauthorizedAccessException("Для обновления перезапустите Boolka без прав администратора или используйте установщик.");
     }
 }

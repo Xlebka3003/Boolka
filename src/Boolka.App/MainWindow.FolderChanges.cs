@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -56,6 +56,9 @@ public partial class MainWindow
             {
                 if (lifetime.IsCancellationRequested || !ReferenceEquals(addonFolderWatcher, watcher)) return;
                 if (args is ErrorEventArgs) folderWatcherFailed = true;
+                else if (args is FileSystemEventArgs change &&
+                    !AddonFolderChangeFilter.IsRelevant(folder, change.FullPath, change.ChangeType) &&
+                    !(change is RenamedEventArgs rename && AddonFolderChangeFilter.IsRelevant(folder, rename.OldFullPath, rename.ChangeType))) return;
                 Interlocked.Increment(ref folderChangeVersion);
                 try { Dispatcher.BeginInvoke(new Action(ScheduleFolderChangeSignal), DispatcherPriority.Background); }
                 catch (InvalidOperationException) when (lifetime.IsCancellationRequested || Dispatcher.HasShutdownStarted) { }
@@ -102,18 +105,12 @@ public partial class MainWindow
         {
             if (changed)
             {
-                button.SetResourceReference(Control.BackgroundProperty, "StatusAttention");
-                button.SetResourceReference(Control.BorderBrushProperty, "StatusAttention");
-                button.SetResourceReference(Control.ForegroundProperty, "StatusAttentionText");
-                button.FontWeight = FontWeights.SemiBold;
+                ButtonState.Apply(button, "Warning");
                 button.ToolTip = UiText.Get("Папка AddOns изменилась. Нажмите, чтобы обновить список.");
             }
             else
             {
-                button.ClearValue(Control.BackgroundProperty);
-                button.ClearValue(Control.BorderBrushProperty);
-                button.ClearValue(Control.ForegroundProperty);
-                button.ClearValue(Control.FontWeightProperty);
+                ButtonState.Apply(button, null);
                 button.ClearValue(ToolTipProperty);
             }
         }

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,15 +7,6 @@ namespace Boolka;
 
 public partial class MainWindow
 {
-    public static readonly DependencyProperty CompactRowsProperty = DependencyProperty.Register(
-        nameof(CompactRows), typeof(bool), typeof(MainWindow), new PropertyMetadata(true));
-
-    public bool CompactRows
-    {
-        get => (bool)GetValue(CompactRowsProperty);
-        set => SetValue(CompactRowsProperty, value);
-    }
-
     private readonly PreferencesStore preferencesStore;
     private AppPreferences preferences = new();
     private bool initializingPreferences = true;
@@ -36,68 +27,25 @@ public partial class MainWindow
             UiText.Get(descending ? "По убыванию. Изменить направление сортировки" : "По возрастанию. Изменить направление сортировки"));
     }
 
-    private void ShowCards(object sender, RoutedEventArgs e) => ChangeDensity(false);
-    private void ShowCompact(object sender, RoutedEventArgs e) => ChangeDensity(true);
-
-    private void ChangeDensity(bool compact)
-    {
-        CompactRows = compact;
-        UpdateViewButtons();
-        ApplyCollectionScale();
-        SavePreferences();
-    }
-
-    private void UpdateViewButtons()
-    {
-        CardsButton.Background = CompactRows ? System.Windows.Media.Brushes.Transparent : ThemeManager.Brush("#353044");
-        CompactButton.Background = CompactRows ? ThemeManager.Brush("#353044") : System.Windows.Media.Brushes.Transparent;
-    }
-
     private void ShrinkCollection(object sender, RoutedEventArgs e) => ChangeCollectionScale(-0.1);
     private void EnlargeCollection(object sender, RoutedEventArgs e) => ChangeCollectionScale(0.1);
 
     private void ChangeCollectionScale(double delta)
     {
-        if (CompactRows)
-            preferences = preferences with { CollectionScale = Math.Clamp(Math.Round(preferences.CollectionScale + delta, 2), 0.5, 1.5) };
-        else
-        {
-            var capacity = TileCapacity();
-            var current = Math.Min(preferences.TileColumns, capacity);
-            preferences = preferences with { TileColumns = Math.Clamp(current + (delta > 0 ? 1 : -1), 1, capacity) };
-        }
+        if (busy) return;
+        preferences = preferences with { CollectionScale = Math.Clamp(Math.Round(preferences.CollectionScale + delta, 2), 0.5, 1.5) };
         ApplyCollectionScale();
         SavePreferences();
     }
 
     private void ApplyCollectionScale()
     {
-        // Масштаб списка и число плиток независимы: переход между видами сохраняет оба выбора.
-        var scale = CompactRows ? preferences.CollectionScale : 1;
-        CollectionScaleTransform.ScaleX = CollectionScaleTransform.ScaleY = scale;
-        if (!Equals(Resources["Collection.TileColumns"], preferences.TileColumns))
-            Resources["Collection.TileColumns"] = preferences.TileColumns;
-        var count = Math.Min(preferences.TileColumns, TileCapacity());
-        CollectionScaleLabel.Text = CompactRows ? $"{preferences.CollectionScale:P0}" : UiText.Format($"В ряд: {count}");
-        ShrinkCollectionButton.IsEnabled = CompactRows ? preferences.CollectionScale > 0.5 : count > 1;
-        EnlargeCollectionButton.IsEnabled = CompactRows ? preferences.CollectionScale < 1.5 : count < TileCapacity();
-        System.Windows.Automation.AutomationProperties.SetName(ShrinkCollectionButton,
-            UiText.Get(CompactRows ? "Уменьшить элементы" : "Меньше плиток в строке"));
-        System.Windows.Automation.AutomationProperties.SetName(EnlargeCollectionButton,
-            UiText.Get(CompactRows ? "Увеличить элементы" : "Больше плиток в строке"));
-    }
-
-    private int TileCapacity()
-    {
-        var width = FindListScroll(AddonList)?.ViewportWidth ?? 0;
-        if (width <= 0) width = AddonList.ActualWidth;
-        return width > 0 ? AdaptiveTilePanel.CalculateCapacity(width) : 8;
-    }
-
-    private void CollectionViewportChanged(object sender, ScrollChangedEventArgs e)
-    {
-        if (AddonList is not null && CollectionScaleTransform is not null && e.ViewportWidthChange != 0)
-            ApplyCollectionScale();
+        CollectionScaleTransform.ScaleX = CollectionScaleTransform.ScaleY = preferences.CollectionScale;
+        CollectionScaleLabel.Text = $"{preferences.CollectionScale:P0}";
+        ShrinkCollectionButton.IsEnabled = !busy && preferences.CollectionScale > 0.5;
+        EnlargeCollectionButton.IsEnabled = !busy && preferences.CollectionScale < 1.5;
+        System.Windows.Automation.AutomationProperties.SetName(ShrinkCollectionButton, UiText.Get("Уменьшить элементы"));
+        System.Windows.Automation.AutomationProperties.SetName(EnlargeCollectionButton, UiText.Get("Увеличить элементы"));
     }
 
     private void PresenceChanged(object sender, SelectionChangedEventArgs e)
@@ -110,7 +58,7 @@ public partial class MainWindow
     private void SavePreferences()
     {
         if (initializingPreferences) return;
-        preferences = preferences with { CompactRows = CompactRows, CatalogFilter = Math.Max(0, CatalogPresenceFilterBox.SelectedIndex), SortIndex = Math.Max(0, SortBox.SelectedIndex) };
+        preferences = preferences with { CatalogFilter = Math.Max(0, CatalogPresenceFilterBox.SelectedIndex), SortIndex = Math.Max(0, SortBox.SelectedIndex) };
         try { preferencesStore.Save(preferences); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
         {
@@ -190,12 +138,10 @@ public partial class MainWindow
         var updates = installed.Where(x => x.HasUpdate && !x.UpdatesIgnored).Select(x => x.PreviewId).Distinct().Count();
         UpdateAllButton.IsEnabled = available && updates > 0;
         UpdateAllButton.Content = updates > 0 ? UiText.Format($"Обновить всё ({updates})") : UiText.Get("Обновить всё");
-        UpdateAllButton.Background = updates > 0 ? ThemeManager.Brush("#7DDDC0") : System.Windows.Media.Brushes.Transparent;
-        UpdateAllButton.Foreground = ThemeManager.Brush(updates > 0 ? ThemePalette.IsLight ? "#FAF8F4" : "#14121D" : "#E9EDF5");
+        ButtonState.Apply(UpdateAllButton, updates > 0 ? "Update" : null);
         var needsLibraries = installed.Any(x => x.DependencyHealth is { HasProblems: true, Unknown.Count: 0 } && x.PreviewId is > 0 && !x.UpdatesIgnored);
         RepairAllButton.IsEnabled = available && needsLibraries;
-        RepairAllButton.Background = needsLibraries ? ThemeManager.Brush("#FFB86C") : System.Windows.Media.Brushes.Transparent;
-        RepairAllButton.Foreground = ThemeManager.Brush(needsLibraries ? "#14121D" : "#E9EDF5");
+        ButtonState.Apply(RepairAllButton, needsLibraries ? "Warning" : null);
         var visibility = !catalogMode && DetailPage.Visibility != Visibility.Visible ? Visibility.Visible : Visibility.Collapsed;
         UpdateAllButton.Visibility = RepairAllButton.Visibility = visibility;
         ExportPackButton.Visibility = DetailPage.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
@@ -211,7 +157,7 @@ public partial class MainWindow
         var summary = UiText.Format($"Переместить папку аддона в резервную копию:\n{folder}\n\nОстальные аддоны и SavedVariables останутся на месте. Закройте ESO перед продолжением.");
         if (folders.Length > 1)
             summary = UiText.Format($"Переместить выбранные папки в резервную копию ({folders.Length})?\n{string.Join("\n", folders)}\n\nОстальные аддоны и SavedVariables останутся на месте. Закройте ESO перед продолжением.");
-        if (new OperationConfirmationWindow(this, UiText.Get("Удаление аддона"), summary).ShowDialog() != true) return;
+        if (new OperationConfirmationWindow(this, UiText.Get("Удаление аддона"), summary, destructive: true).ShowDialog() != true) return;
         SetBusy(true, UiText.Get("Перемещаем аддон в резервную копию…"));
         installCommitting = true;
         try

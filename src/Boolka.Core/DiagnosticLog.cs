@@ -156,8 +156,8 @@ internal sealed class DiagnosticLog : IDisposable
                         using var writer = new StreamWriter(zip.CreateEntry(name, CompressionLevel.Optimal).Open(), new UTF8Encoding(false));
                         writer.Write(text);
                     }
-                    Add("README.txt", "boolka diagnostic report\nReview the text files before sharing. No game files, SavedVariables, settings files, or memory dumps are included.\nLogs contain sanitized error messages, stack traces, app version, OS and runtime information. No automatic upload occurs.\n");
-                    Add("environment.txt", redactor.Filter($"boolka {version}\nOS: {RuntimeInformation.OSDescription}\n.NET: {Environment.Version}\nArchitecture: {RuntimeInformation.ProcessArchitecture}\nLog files: {contents.Count}\n"));
+                    Add("README.txt", "Boolka diagnostic report\nReview the text files before sharing. No game files, SavedVariables, settings files, or memory dumps are included.\nLogs contain sanitized error messages, stack traces, app version, OS and runtime information. No automatic upload occurs.\n");
+                    Add("environment.txt", redactor.Filter($"Boolka {version}\nOS: {RuntimeInformation.OSDescription}\n.NET: {Environment.Version}\nArchitecture: {RuntimeInformation.ProcessArchitecture}\nLog files: {contents.Count}\n"));
                     foreach (var entry in contents) Add("logs/" + entry.Name, entry.Text);
                 }
                 output.Flush(true);

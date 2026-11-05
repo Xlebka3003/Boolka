@@ -4,14 +4,14 @@
     <StartupObject>Boolka.Program</StartupObject>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <Version>0.42.1</Version>
+    <Version>0.42.13</Version>
     <AssemblyName>boolka</AssemblyName>
     <RootNamespace>Boolka</RootNamespace>
-    <Product>boolka</Product>
+    <Product>Boolka</Product>
     <Authors>Xlebka</Authors>
     <Copyright>Copyright (c) 2026 Xlebka</Copyright>
     <PackageLicenseExpression>PolyForm-Noncommercial-1.0.0</PackageLicenseExpression>
-    <Title>boolka</Title>
+    <Title>Boolka</Title>
     <ApplicationIcon>Assets\boolka.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Boolka.Core\Boolka.Core.csproj" />
     <Resource Include="Assets\boolka.ico" />
+    <Resource Include="Assets\boolka.png" />
     <Resource Include="Assets\eso.ico" />
     <Resource Include="Assets\Flags\*.png" />
     <Content Include="Assets\Flags\LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

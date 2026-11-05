@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -49,8 +49,8 @@ public partial class MainWindow : Window
         preferences = preferencesStore.Load();
         UiResources.Apply(preferences.Language);
         ThemeManager.Apply(preferences.Theme);
-        CategoryIcons.ApplyMode(preferences.PreviewMode);
         InitializeComponent();
+        UpdateLaunchButton();
         WindowTheme.Attach(this);
         WindowWorkArea.Attach(this);
         StateChanged += (_, _) => MaximizeCaptionIcon.Icon = WindowState == WindowState.Maximized ? "copy" : "square";
@@ -60,10 +60,8 @@ public partial class MainWindow : Window
         UiResources.Register("Повторить");
         RetryOperationButton.SetResourceReference(ContentControl.ContentProperty, UiText.ResourceKey("Повторить"));
         UiResources.Register("Запуск ESO и базы модов");
-        LaunchButton.SetResourceReference(System.Windows.Automation.AutomationProperties.NameProperty, UiText.ResourceKey("Запуск ESO и базы модов"));
         if (LaunchButton.ContextMenu?.Items[0] is MenuItem launchMenu)
             launchMenu.SetResourceReference(HeaderedItemsControl.HeaderProperty, UiText.ResourceKey("Запуск ESO и базы модов"));
-        CompactRows = preferences.CompactRows;
         ApplyCollectionScale();
         ApplyDescriptionScale();
         CatalogPresenceFilterBox.SelectedIndex = preferences.CatalogFilter;
@@ -71,7 +69,7 @@ public partial class MainWindow : Window
         UpdateCategoryOptions();
         UpdateSortDirection();
         initializingPreferences = false;
-        UpdateViewButtons();
+        if (preferencesStore.NeedsViewPreferenceCleanup) SavePreferences();
         SizeChanged += UpdateInterfaceScale;
         Deactivated += (_, _) => ResetGalleryGesture();
         UpdateApplicationButton();
@@ -92,7 +90,7 @@ public partial class MainWindow : Window
             if (await LoadFolderAsync(saved.Folder, false))
             {
                 await FetchCatalogAsync(true, false);
-                if (saved.Warning is not null) SetStatus(StatusLabel.Text + " · " + UiError.Detail(saved.Warning), needsAttention: true);
+                if (saved.Warning is not null) SetStatus(StatusLabel.Text + " | " + UiError.Detail(saved.Warning), needsAttention: true);
                 await TryStartupAddonUpdateAsync();
                 ShowPreviousCrashNotice();
                 return;
@@ -106,7 +104,7 @@ public partial class MainWindow : Window
         {
             if (await LoadFolderAsync(dialog.SelectedFolder, true)) await FetchCatalogAsync(true, false);
         }
-        else SetStatus(UiText.Get("Папка не выбрана · Её можно указать кнопкой «Выбрать папку»"), needsAttention: true);
+        else SetStatus(UiText.Get("Папка не выбрана · Её можно указать кнопкой «Выбрать папку»"), warning: true);
         await TryStartupAddonUpdateAsync();
         ShowPreviousCrashNotice();
     }
@@ -114,7 +112,7 @@ public partial class MainWindow : Window
     private void OpenAddonsFolder(object sender, RoutedEventArgs e)
     {
         if (currentFolder is null || !Directory.Exists(currentFolder))
-        { SetStatus(UiText.Get("Сначала выберите папку ESO live\\AddOns кнопкой «Выбрать папку»."), needsAttention: true); return; }
+        { SetStatus(UiText.Get("Сначала выберите папку ESO live\\AddOns кнопкой «Выбрать папку»."), warning: true); return; }
         try { Process.Start(new ProcessStartInfo("explorer.exe") { ArgumentList = { currentFolder }, UseShellExecute = false }); }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException or UnauthorizedAccessException)
         {
@@ -149,7 +147,7 @@ public partial class MainWindow : Window
             FolderLabel.Text = folder;
             if (!preserveView) catalogMode = false;
             Refresh();
-            SetStatus(UiText.Format($"Найдено: {installed.Count} · Пропущено недоступных файлов или ссылок: {result.Skipped} · Файлы не изменены"), needsAttention: result.Skipped > 0);
+            SetStatus(UiText.Format($"Найдено: {installed.Count} · Пропущено недоступных файлов или ссылок: {result.Skipped} · Файлы не изменены"), warning: result.Skipped > 0);
             if (saveSelection)
             {
                 try { settings.Save(folder); }
@@ -171,6 +169,8 @@ public partial class MainWindow : Window
 
     private void ApplyComparisons()
     {
+        var categoryNames = categories.ToDictionary(category => category.Id, category => category.OriginalName);
+        catalog = catalog.Select(addon => addon with { CategoryName = categoryNames.GetValueOrDefault(addon.CategoryId, addon.CategoryName) }).ToArray();
         var results = AddonMatcher.Compare(installed, catalog, catalogLoadedAt.HasValue);
         var knownIds = results.Where(x => x.CatalogAddon?.CatalogId is > 0).Select(x => x.CatalogAddon!.CatalogId!.Value).ToHashSet();
         var unresolvedFolders = results.Where(x => x.CatalogAddon is null)
@@ -275,7 +275,7 @@ public partial class MainWindow : Window
     }
 
     private string CatalogStatus() => UiText.Format($"Каталог ESOUI · {catalog.Count} аддонов · Получен в {catalogLoadedAt:HH:mm}")
-        + (categoryWarning is null ? "" : " · " + categoryWarning);
+        + (categoryWarning is null ? "" : " | " + categoryWarning);
 
     private static string DetailsKey(Addon addon) => addon.PreviewId is > 0 ? "id:" + addon.PreviewId : "path:" + addon.Path;
     private static string ReadableDependencies(string text) => System.Text.RegularExpressions.Regex.Replace(text,
@@ -583,7 +583,7 @@ public partial class MainWindow : Window
         if (installCommitting)
         {
             e.Cancel = true;
-            SetStatus(UiText.Get("Дождитесь завершения операции или отката — сохраняем файлы безопасно."), needsAttention: true);
+            SetStatus(UiText.Get("Дождитесь завершения операции или отката — сохраняем файлы безопасно."), warning: true);
         }
         base.OnClosing(e);
     }
@@ -593,6 +593,7 @@ public partial class MainWindow : Window
         busy = value;
         UpdateFolderChangeButton();
         UpdateApplicationButton();
+        UpdateLaunchButton();
         BackButton.IsEnabled = RetryDetailsButton.IsEnabled = !value;
         DetailInstallButton.IsEnabled = !value && (AddonList.SelectedItem as Addon)?.CanInstall == true;
         SearchBox.IsEnabled = !value;
@@ -603,7 +604,7 @@ public partial class MainWindow : Window
         ChooseFolderButton.IsEnabled = ReloadCatalogButton.IsEnabled = !value;
         CheckUpdatesButton.IsEnabled = !value && currentFolder is not null;
         InstalledButton.IsEnabled = CatalogButton.IsEnabled = !value;
-        CatalogPresenceFilterBox.IsEnabled = CardsButton.IsEnabled = CompactButton.IsEnabled = !value;
+        CatalogPresenceFilterBox.IsEnabled = !value;
         CategoryFilterBox.IsEnabled = !value;
         ExportPackButton.IsEnabled = ImportPackButton.IsEnabled = !value && currentFolder is not null;
         SortDirectionButton.IsEnabled = !value;
@@ -653,8 +654,8 @@ public partial class MainWindow : Window
         CheckUpdatesButton.Visibility = !catalogMode && DetailPage.Visibility != Visibility.Visible ? Visibility.Visible : Visibility.Collapsed;
         CheckUpdatesButton.IsEnabled = !busy && currentFolder is not null;
         EmptyText.Text = source.Count > 0 ? UiText.Get("Попробуйте изменить поисковый запрос или фильтр статуса.") : catalogMode ? catalogEmptyMessage : UiText.Get("Выберите папку AddOns. Boolka прочитает названия, версии и зависимости из манифестов.");
-        InstalledButton.Background = catalogMode ? Brushes.Transparent : ThemeManager.Brush("#353044");
-        CatalogButton.Background = catalogMode ? ThemeManager.Brush("#353044") : Brushes.Transparent;
+        ButtonState.Select(InstalledButton, !catalogMode);
+        ButtonState.Select(CatalogButton, catalogMode);
         if (filtered.Count > 0) AddonList.SelectedItem = filtered.FirstOrDefault(x => catalogMode ? x.CatalogId == previous?.CatalogId : x.Path == previous?.Path) ?? filtered[0];
         else if (DetailPage.Visibility == Visibility.Visible) ReturnToList();
         if (!catalogMode && selectedPaths.Count > 1)
@@ -739,8 +740,7 @@ public partial class MainWindow : Window
         DetailOpenFolderButton.IsEnabled = !busy && SelectedAddonFolder(addon) is not null;
         LibrariesButton.Visibility = addon?.IsInstalled == true && addon.HasDependencyProblems && selectedDependencyPlan is not null ? Visibility.Visible : Visibility.Collapsed;
         LibrariesButton.IsEnabled = !busy && CanRepairLibraries();
-        LibrariesButton.Background = CanRepairLibraries() ? ThemeManager.Brush("#FFB86C") : Brushes.Transparent;
-        LibrariesButton.Foreground = ThemeManager.Brush(CanRepairLibraries() ? "#14121D" : "#E9EDF5");
+        ButtonState.Apply(LibrariesButton, CanRepairLibraries() ? "Warning" : null);
         DownloadZipButton.IsEnabled = !busy && CanDownloadSelectedZip();
         OpenButton.Content = catalogMode ? "ESOUI ↗" : UiText.Get("Открыть папку");
         OpenButton.IsEnabled = addon is not null && (catalogMode ? addon.WebUrl is not null : Directory.Exists(addon.Path));
@@ -809,7 +809,7 @@ public partial class MainWindow : Window
     private async Task ExecuteInstallationAsync(Addon? chosen, bool librariesOnly, bool reinstall = false, bool batch = false, PackImportApproval? packImport = null)
     {
         if (currentFolder is null || !Directory.Exists(currentFolder))
-        { SetStatus(UiText.Get("Сначала выберите папку ESO live\\AddOns кнопкой «Выбрать папку»."), needsAttention: true); return; }
+        { SetStatus(UiText.Get("Сначала выберите папку ESO live\\AddOns кнопкой «Выбрать папку»."), warning: true); return; }
         var target = currentFolder;
         if (!System.IO.Path.GetFileName(System.IO.Path.TrimEndingDirectorySeparator(target)).Equals("AddOns", StringComparison.OrdinalIgnoreCase))
         { SetStatus(UiText.Get("Для установки выберите папку с именем AddOns внутри ESO live."), needsAttention: true); return; }
@@ -853,7 +853,7 @@ public partial class MainWindow : Window
                 skipped = batchPlan.Skipped;
                 if (plan is null)
                 {
-                    SetStatus(UiText.Get("Подходящих пакетов нет. ") + string.Join("; ", skipped.Take(5)), needsAttention: true);
+                    SetStatus(UiText.Get("Подходящих пакетов нет. ") + string.Join("; ", skipped.Take(5)), warning: true);
                     return;
                 }
             }
@@ -880,14 +880,14 @@ public partial class MainWindow : Window
             // Нажатие установки, обновления или переустановки сразу запускает операцию.
             // Проверки архива, резервная копия и откат остаются внутри SafeInstaller.
             installCommitting = true;
-            SetStatus(UiText.Get("Проверяем и устанавливаем архивы. Дождитесь завершения…"), needsAttention: true);
+            SetStatus(UiText.Get("Проверяем и устанавливаем архивы. Дождитесь завершения…"));
             var updatedCount = plan.Packages.Count(x => x.IsInstalled);
             var installedCount = plan.Packages.Count - updatedCount;
             EnsureStartupUpdateGameClosed();
             var result = await new SafeInstaller().InstallAsync(plan, archives, target, operation.Token);
             lastBackupDirectory = result.BackupDirectory;
             OpenBackupButton.Visibility = Visibility.Visible;
-            SetStatus(UiText.Format($"Готово · Установлено: {installedCount} · Обновлено: {updatedCount} · Пропущено: {skipped.Count}"), needsAttention: skipped.Count > 0);
+            SetStatus(UiText.Format($"Готово · Установлено: {installedCount} · Обновлено: {updatedCount} · Пропущено: {skipped.Count}"), warning: skipped.Count > 0);
             try
             {
                 installed = (await ScanInstalledFolderAsync(target)).Addons;
@@ -896,15 +896,15 @@ public partial class MainWindow : Window
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
             {
                 AppLog.Error("ui.operation.failed", ex);
-                SetStatus(StatusLabel.Text + UiText.Get(" · Установка завершена, но список не обновлён. Нажмите «Пересканировать»."), needsAttention: true);
+                SetStatus(StatusLabel.Text + UiText.Get(" · Установка завершена, но список не обновлён. Нажмите «Пересканировать»."), warning: true);
             }
         }
         catch (OperationCanceledException ex)
-        { if (!lifetime.IsCancellationRequested) OperationFailed(ex, packImport is null ? () => ExecuteInstallationAsync(chosen, librariesOnly, reinstall, batch) : () => PreviewPackImportAsync(packImport.Pack)); }
+        { if (!lifetime.IsCancellationRequested) OperationFailed(ex, packImport is null ? () => ExecuteInstallationAsync(chosen, librariesOnly, reinstall, batch) : () => PreviewPackImportAsync(packImport.Pack, retryMissing: true)); }
         catch (Exception ex) when (ex is System.Net.Http.HttpRequestException or IOException or UnauthorizedAccessException or InvalidDataException or System.Text.Json.JsonException or ArgumentException or NotSupportedException or System.Security.Cryptography.CryptographicException or InvalidOperationException)
         {
             AppLog.Error("ui.operation.failed", ex);
-            OperationFailed(ex, packImport is null ? () => ExecuteInstallationAsync(chosen, librariesOnly, reinstall, batch) : () => PreviewPackImportAsync(packImport.Pack));
+            OperationFailed(ex, packImport is null ? () => ExecuteInstallationAsync(chosen, librariesOnly, reinstall, batch) : () => PreviewPackImportAsync(packImport.Pack, retryMissing: true));
         }
         finally
         {

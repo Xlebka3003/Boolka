@@ -1,4 +1,4 @@
-﻿namespace Boolka;
+namespace Boolka;
 
 public sealed record Addon(string Name, string Version, string Author, string Description, string Path, string Dependencies, string? WebUrl = null)
 {
@@ -13,6 +13,12 @@ public sealed record Addon(string Name, string Version, string Author, string De
     public string BuildVersion { get; init; } = "";
     public string? ManifestVersion { get; init; }
     public string VersionLabel => Boolka.VersionLabel.Format(this);
+    public bool HasVersionComparison => IsInstalled && HasUpdate && CanInstall && Comparison?.CatalogAddon is not null;
+    public string PreviousVersionText => HasVersionComparison ? Boolka.VersionLabel.Compact(this) : "";
+    public string AvailableVersionText => HasVersionComparison ? Boolka.VersionLabel.Compact(Comparison!.CatalogAddon!) : "";
+    public string VersionComparisonTooltip => HasVersionComparison
+        ? UiText.Get("Установлена") + ": " + VersionLabel + "\n" + UiText.Get("Доступна") + ": " + Boolka.VersionLabel.Format(Comparison!.CatalogAddon!)
+        : VersionLabel;
     public long? InstalledReleaseId { get; init; }
     public string? InstalledReleaseVersion { get; init; }
     public AddonComparison? Comparison { get; init; }
@@ -20,6 +26,12 @@ public sealed record Addon(string Name, string Version, string Author, string De
     public DateTimeOffset? LastUpdated { get; init; }
     public Addon? DisplayCatalog => Comparison?.CatalogAddon ?? (CatalogId.HasValue ? this : null);
     public string DisplayName => Comparison?.CatalogAddon?.Name ?? Name;
+    public string CategoryName { get; init; } = "";
+    public string DisplayAuthor => !string.IsNullOrWhiteSpace(DisplayCatalog?.Author) ? DisplayCatalog.Author : Author;
+    public string AuthorByline => string.IsNullOrWhiteSpace(DisplayAuthor) ? "" : " | " + DisplayAuthor;
+    public string CategoryText => DisplayCategoryId <= 0 ? UiText.Get("Без категории")
+        : CategoryNames.Display(DisplayCategoryId, !string.IsNullOrWhiteSpace(DisplayCatalog?.CategoryName)
+            ? DisplayCatalog.CategoryName : !string.IsNullOrWhiteSpace(CategoryName) ? CategoryName : UiText.Format($"Категория ESOUI №{DisplayCategoryId}"));
     public long? DisplayDownloads => DisplayCatalog?.Downloads;
     public long DisplayCategoryId => DisplayCatalog?.CategoryId ?? CategoryId;
     public DateTimeOffset? DisplayLastUpdated => DisplayCatalog?.LastUpdated;
@@ -33,12 +45,17 @@ public sealed record Addon(string Name, string Version, string Author, string De
     public bool LocalMetadataComplete { get; init; } = true;
     public bool HasDependencyProblems => DependencyHealth?.HasProblems == true;
     public string DependencyStatusText => DependencyHealth is { } health && (health.HasProblems || health.Unknown.Count > 0) ? health.StatusText : "";
-    public string DependencyStatusColor => ThemePalette.Map(HasDependencyProblems ? "#F28B93" : "#9AA3B5");
+    public string DependencyStatusColor => DependencyHealth is { } health && (health.HasProblems || health.Unknown.Count > 0) ? ThemePalette.Warning : ThemePalette.Map("#9AA3B5");
     public bool CanInstall => !UnconfirmedInstallation && PreviewId is > 0 && (!IsInstalled || HasUpdate && !UpdatesIgnored);
     public bool IsIgnoredStatus => IsInstalled && UpdatesIgnored && !UnconfirmedInstallation;
-    public string InstallActionBackground => IsIgnoredStatus ? "#F1FA8C" : HasUpdate && CanInstall ? ThemePalette.Map("#7DDDC0") : "Transparent";
-    public string InstallActionForeground => IsIgnoredStatus ? "#282A36" : HasUpdate && CanInstall && ThemePalette.IsLight ? "#FAF8F4"
-        : ThemePalette.Map(HasUpdate && CanInstall ? "#14121D" : "#E9EDF5");
+    public string InstallActionBackground => HasUpdate && CanInstall ? ThemePalette.Update : "Transparent";
+    public string InstallActionBorder => HasUpdate && CanInstall ? ThemePalette.Update : ThemePalette.Map("#353C4E");
+    public string InstallActionForeground => HasUpdate && CanInstall ? ThemePalette.OnState : ThemePalette.Map("#E9EDF5");
+    public string InstallationStatusText => UnconfirmedInstallation ? UiText.Get("Папка уже есть")
+        : !IsInstalled ? "" : UpdatesIgnored ? UiText.Get("Пропущен")
+        : HasUpdate ? UiText.Get("Обновление доступно") : UiText.Get("Установлен");
+    public string InstallationStatusColor => UnconfirmedInstallation ? ThemePalette.Warning
+        : HasUpdate && !UpdatesIgnored ? ThemePalette.Update : ThemePalette.Map("#9AA3B5");
     public string InstallationLabel => UnconfirmedInstallation ? UiText.Get("Папка уже есть") : !IsInstalled ? UiText.Get("Установить") : UpdatesIgnored ? UiText.Get("Пропущен") : HasUpdate ? UiText.Get("Обновить") : UiText.Get("Установлен");
     public IReadOnlyList<CatalogModule> PackageModules { get; init; } = Array.Empty<CatalogModule>();
     public IReadOnlyList<string> RequiredDependencies { get; init; } = Array.Empty<string>();
@@ -64,9 +81,9 @@ public sealed record AddonComparison(Addon Addon, Addon? CatalogAddon, UpdateSta
     };
     public string StatusColor => Status switch
     {
-        UpdateStatus.UpdateAvailable => "#E8C17A",
-        UpdateStatus.VersionsMatch => "#94D6AE",
-        _ => "#9AA3B5"
+        UpdateStatus.UpdateAvailable => ThemePalette.Update,
+        UpdateStatus.VersionsMatch => ThemePalette.Map("#9AA3B5"),
+        _ => ThemePalette.Map("#9AA3B5")
     };
 }
 public sealed record ScanResult(IReadOnlyList<Addon> Addons, int Skipped);

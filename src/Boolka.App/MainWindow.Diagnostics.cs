@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using Microsoft.Win32;
 
@@ -33,7 +33,7 @@ public partial class MainWindow
     private void ShowPreviousCrashNotice()
     {
         if (!AppLog.PreviousCrash) return;
-        SetStatus(StatusLabel.Text + " · " + UiText.Get("В прошлый раз приложение завершилось с ошибкой. Сохраните журнал в настройках."), needsAttention: true);
+        SetStatus(StatusLabel.Text + " | " + UiText.Get("В прошлый раз приложение завершилось с ошибкой. Сохраните журнал в настройках."), needsAttention: true);
         AppLog.AcknowledgeCrash();
     }
 }

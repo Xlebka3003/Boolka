@@ -1,15 +1,15 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Windows;
 
 namespace Boolka;
 
 public partial class MainWindow
 {
-    private void SetStatus(string text, bool needsAttention = false)
+    private void SetStatus(string text, bool needsAttention = false, bool warning = false)
     {
         StatusLabel.Text = text;
-        StatusLabel.SetResourceReference(System.Windows.Controls.Control.ForegroundProperty, needsAttention ? "StatusAttention" : "Muted");
-        StatusLabel.FontWeight = needsAttention ? FontWeights.SemiBold : FontWeights.Normal;
+        StatusLabel.SetResourceReference(System.Windows.Controls.Control.ForegroundProperty, needsAttention ? "State.Error" : warning ? "State.Warning" : "Muted");
+        StatusLabel.FontWeight = needsAttention || warning ? FontWeights.SemiBold : FontWeights.Normal;
     }
 
     private Func<Task>? retryOperation;
@@ -31,7 +31,7 @@ public partial class MainWindow
         if (total is > 0)
             OperationProgress.Value = 100.0 * (index - 1 + Math.Clamp((double)bytes / total.Value, 0, 1)) / count;
         SetStatus(total is > 0
-            ? UiText.Format($"Скачиваем {index} из {count} · {name}: {bytes / 1048576.0:0.0} из {total / 1048576.0:0.0} МБ")
+            ? UiText.Format($"Скачиваем {index} из {count} · {name}: {bytes / 1048576.0:0.0} из {total / 1048576.0:0.0} МБ") + $" | {100 * Math.Clamp((double)bytes / total.Value, 0, 1):0}%"
             : UiText.Format($"Скачиваем {index} из {count} · {name}: {bytes / 1048576.0:0.0} МБ"));
     }
 
@@ -64,7 +64,7 @@ public partial class MainWindow
         {
             retryOperation = null;
             RetryOperationButton.Visibility = Visibility.Collapsed;
-            SetStatus(UiText.Get("Папка изменилась. Запустите нужную операцию заново."), needsAttention: true);
+            SetStatus(UiText.Get("Папка изменилась. Запустите нужную операцию заново."), warning: true);
             return;
         }
         await retry();

@@ -1,4 +1,4 @@
-# boolka
+# Boolka
 
 [Русский](README.md) | **English**
 
@@ -6,7 +6,7 @@ An addon manager for The Elder Scrolls Online on Windows.
 
 ## GIF
 
-![boolka interface](docs/screenshots/boolka-overview.gif)
+![Boolka interface](docs/screenshots/boolka-overview.gif)
 
 ## Installation
 

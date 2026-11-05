@@ -13,6 +13,9 @@ public partial class MainWindow
 
         var labelVisibility = sidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
         SidebarBrand.Visibility = labelVisibility;
+        SidebarIdentity.Visibility = labelVisibility;
+        System.Windows.Controls.Grid.SetRow(SidebarToggle, 0);
+        SidebarToggle.Margin = new Thickness(0);
         // У навигации одна компактная раскладка: раскрытие добавляет только названия справа.
         SidebarTagline.Visibility = Visibility.Collapsed;
         SidebarLibraryLabel.Visibility = Visibility.Collapsed;

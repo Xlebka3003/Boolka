@@ -1,5 +1,10 @@
 {
   "de": {
+    "Launch ESO": "ESO starten",
+    "Starting…": "Wird gestartet…",
+    "Delete": "Löschen",
+    "Review selected": "Auswahl prüfen",
+    "Selected addons and their dependencies will be reviewed again before installation.": "Ausgewählte Addons und ihre Abhängigkeiten werden vor der Installation erneut geprüft.",
     "The AddOns folder changed. Click to refresh the list.": "Der AddOns-Ordner wurde geändert. Klicken, um die Liste zu aktualisieren.",
     "boolka {0} is available. Click to download and update.": "boolka {0} ist verfügbar. Zum Herunterladen und Aktualisieren klicken.",
     "boolka checks for updates automatically.": "boolka sucht automatisch nach Updates.",
@@ -507,6 +512,11 @@
     "Windows helpers cannot run directly on this system. Choose a compatible program manually.": "Windows-Hilfsprogramme laufen auf diesem System nicht direkt. Wähle ein kompatibles Programm manuell."
   },
   "fr": {
+    "Launch ESO": "Lancer ESO",
+    "Starting…": "Démarrage…",
+    "Delete": "Supprimer",
+    "Review selected": "Vérifier la sélection",
+    "Selected addons and their dependencies will be reviewed again before installation.": "Les extensions sélectionnées et leurs dépendances seront vérifiées à nouveau avant installation.",
     "The AddOns folder changed. Click to refresh the list.": "Le dossier AddOns a changé. Cliquez pour actualiser la liste.",
     "boolka {0} is available. Click to download and update.": "boolka {0} est disponible. Cliquez pour télécharger et mettre à jour.",
     "boolka checks for updates automatically.": "boolka recherche automatiquement les mises à jour.",
@@ -1014,6 +1024,11 @@
     "Windows helpers cannot run directly on this system. Choose a compatible program manually.": "Les outils Windows ne s’exécutent pas directement sur ce système. Choisissez manuellement un programme compatible."
   },
   "es": {
+    "Launch ESO": "Iniciar ESO",
+    "Starting…": "Iniciando…",
+    "Delete": "Eliminar",
+    "Review selected": "Revisar selección",
+    "Selected addons and their dependencies will be reviewed again before installation.": "Los addons seleccionados y sus dependencias se revisarán de nuevo antes de instalarlos.",
     "The AddOns folder changed. Click to refresh the list.": "La carpeta AddOns ha cambiado. Haz clic para actualizar la lista.",
     "boolka {0} is available. Click to download and update.": "boolka {0} está disponible. Haz clic para descargar y actualizar.",
     "boolka checks for updates automatically.": "boolka busca actualizaciones automáticamente.",
@@ -1521,6 +1536,11 @@
     "Windows helpers cannot run directly on this system. Choose a compatible program manually.": "Las herramientas de Windows no se ejecutan directamente en este sistema. Elige manualmente un programa compatible."
   },
   "pt-BR": {
+    "Launch ESO": "Iniciar ESO",
+    "Starting…": "Iniciando…",
+    "Delete": "Excluir",
+    "Review selected": "Revisar seleção",
+    "Selected addons and their dependencies will be reviewed again before installation.": "Os addons selecionados e suas dependências serão verificados novamente antes da instalação.",
     "The AddOns folder changed. Click to refresh the list.": "A pasta AddOns mudou. Clique para atualizar a lista.",
     "boolka {0} is available. Click to download and update.": "boolka {0} está disponível. Clique para baixar e atualizar.",
     "boolka checks for updates automatically.": "boolka verifica atualizações automaticamente.",
@@ -2028,6 +2048,11 @@
     "Windows helpers cannot run directly on this system. Choose a compatible program manually.": "Os auxiliares do Windows não executam diretamente neste sistema. Escolha um programa compatível manualmente."
   },
   "pl": {
+    "Launch ESO": "Uruchom ESO",
+    "Starting…": "Uruchamianie…",
+    "Delete": "Usuń",
+    "Review selected": "Sprawdź wybrane",
+    "Selected addons and their dependencies will be reviewed again before installation.": "Wybrane dodatki i ich zależności zostaną ponownie sprawdzone przed instalacją.",
     "The AddOns folder changed. Click to refresh the list.": "Folder AddOns został zmieniony. Kliknij, aby odświeżyć listę.",
     "boolka {0} is available. Click to download and update.": "Dostępna jest boolka {0}. Kliknij, aby pobrać i zaktualizować.",
     "boolka checks for updates automatically.": "boolka automatycznie sprawdza aktualizacje.",
@@ -2535,6 +2560,11 @@
     "Windows helpers cannot run directly on this system. Choose a compatible program manually.": "Narzędzia Windows nie działają bezpośrednio w tym systemie. Wybierz zgodny program ręcznie."
   },
   "zh-CN": {
+    "Launch ESO": "启动 ESO",
+    "Starting…": "正在启动…",
+    "Delete": "删除",
+    "Review selected": "检查所选项目",
+    "Selected addons and their dependencies will be reviewed again before installation.": "安装前将重新检查所选插件及其依赖。",
     "The AddOns folder changed. Click to refresh the list.": "AddOns 文件夹已更改。点击刷新列表。",
     "boolka {0} is available. Click to download and update.": "boolka {0} 已可用。点击下载并更新。",
     "boolka checks for updates automatically.": "boolka 会自动检查更新。",
@@ -3042,6 +3072,11 @@
     "Windows helpers cannot run directly on this system. Choose a compatible program manually.": "Windows 辅助程序无法在此系统直接运行。请手动选择兼容程序。"
   },
   "ja": {
+    "Launch ESO": "ESOを起動",
+    "Starting…": "起動中…",
+    "Delete": "削除",
+    "Review selected": "選択内容を確認",
+    "Selected addons and their dependencies will be reviewed again before installation.": "インストール前に選択したアドオンと依存関係を再確認します。",
     "The AddOns folder changed. Click to refresh the list.": "AddOns フォルダーが変更されました。クリックして一覧を更新します。",
     "boolka {0} is available. Click to download and update.": "boolka {0} が利用できます。クリックしてダウンロード・更新します。",
     "boolka checks for updates automatically.": "boolka は更新を自動的に確認します。",

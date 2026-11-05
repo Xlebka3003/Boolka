@@ -7,7 +7,7 @@
   xmlns:local="clr-namespace:Boolka"
   xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
   WindowStyle="None"
-  Title="boolka"
+  Title="Boolka"
   Width="1280"
   Height="840"
   FontSize="14"
@@ -43,211 +43,50 @@
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" /></Border></ControlTemplate></Setter.Value></Setter>
       <Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource Theme.353044}" /></Trigger></Style.Triggers>
     </Style>
-    <DataTemplate
-      x:Key="AddonListTemplate">
+    <DataTemplate x:Key="AddonListTemplate">
       <Grid Background="Transparent">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition
-            Width="92"
-            x:Name="PreviewColumn" />
-          <ColumnDefinition
-            Width="*" />
-          <ColumnDefinition
-            Width="Auto" />
-        </Grid.ColumnDefinitions>
-        <local:PreviewThumbnail
-          Cursor="Hand"
-          AddonId="{Binding PreviewId}" CategoryId="{Binding DisplayCategoryId}"
-          Width="76"
-          Height="76"
-          HorizontalAlignment="Left"
-          VerticalAlignment="Center"
-          x:Name="RowPreview" />
-        <StackPanel
-          Grid.Column="1"
-          VerticalAlignment="Center">
-          <TextBlock
-            Cursor="Hand"
-            Text="{Binding DisplayName}"
-            FontSize="19"
-            FontWeight="SemiBold"
-            TextTrimming="CharacterEllipsis"
-            x:Name="RowTitle" />
-          <TextBlock
-            Text="{Binding Author}"
-            Foreground="{DynamicResource Muted}"
-            FontSize="14"
-            Margin="0,6,0,0"
-            TextTrimming="CharacterEllipsis"
-            x:Name="RowAuthor" />
-          <TextBlock
-            Foreground="{DynamicResource Muted}"
-            FontSize="14"
-            Margin="0,10,0,0"
-            TextWrapping="Wrap"
-            x:Name="RowStats">
-            <Run
-              Text="↓ "
-              Foreground="{DynamicResource Theme.7DDDC0}"
-              FontWeight="SemiBold" />
-            <Run
-              Text="{Binding DownloadsText, Mode=OneWay}"
-              Foreground="{DynamicResource Theme.7DDDC0}"
-              FontWeight="SemiBold" />
-            <Run
-              Text="{DynamicResource Ui.920F6423E90DBB86}" />
-            <Run
-              Text="{Binding UpdatedText, Mode=OneWay}" />
+        <Grid.ColumnDefinitions><ColumnDefinition Width="56" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+        <local:CategoryThumbnail x:Name="RowPreview" CategoryId="{Binding DisplayCategoryId}" Width="44" Height="44" HorizontalAlignment="Left" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+          <TextBlock x:Name="RowTitle" FontSize="15" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayName}">
+            <Run Text="{Binding DisplayName, Mode=OneWay}" FontWeight="SemiBold" />
+            <Run Text="{Binding AuthorByline, Mode=OneWay}" FontSize="12" Foreground="{DynamicResource Muted}" />
           </TextBlock>
-          <TextBlock
-            x:Name="RowDependencyStatus"
-            Text="{Binding DependencyStatusText}"
-            Foreground="{Binding DependencyStatusColor}"
-            FontSize="14"
-            FontWeight="SemiBold"
-            TextWrapping="Wrap"
-            Margin="0,8,0,0" />
+          <TextBlock x:Name="RowCategories" Text="{Binding CategoryText}" FontSize="12" Foreground="{DynamicResource Muted}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" ToolTip="{Binding CategoryText}" />
+          <TextBlock x:Name="RowDependencyStatus" Text="{Binding DependencyStatusText}" Foreground="{Binding DependencyStatusColor}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap" />
         </StackPanel>
-        <StackPanel
-          Grid.Column="2"
-          Margin="12,0,0,0"
-          MaxWidth="150"
-          VerticalAlignment="Center">
-          <TextBlock
-            Text="{Binding VersionLabel}"
-            FontSize="16"
-            Foreground="{DynamicResource Theme.C8B7FF}"
-            TextTrimming="CharacterEllipsis"
-            HorizontalAlignment="Right"
-            x:Name="RowVersion" />
-          <Button
-            Content="{Binding InstallationLabel}"
-            Click="InstallAddon"
-            IsEnabled="{Binding CanInstall}"
-            FontSize="14"
-            FontWeight="SemiBold"
-             Background="{Binding InstallActionBackground}"
-            Foreground="{Binding InstallActionForeground}"
-            Padding="16,9"
-            MinWidth="116"
-            HorizontalAlignment="Right"
-            Margin="0,10,0,0"
-            x:Name="RowInstall" Tag="AddonInstallAction">
-            <Button.ContentTemplate>
-              <DataTemplate>
-                <TextBlock
-                  Text="{Binding}"
-                  Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                  FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType=Button}}"
-                  FontWeight="SemiBold" />
-              </DataTemplate>
-            </Button.ContentTemplate>
-          </Button>
-        </StackPanel>
+        <Grid Grid.Column="2" VerticalAlignment="Center">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="170" /><ColumnDefinition Width="112" /></Grid.ColumnDefinitions>
+          <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" ToolTip="{DynamicResource Ui.1EF1BA27471214A6}">
+              <local:LucideIcon Icon="arrow-down" Width="12" Height="12" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <TextBlock x:Name="RowDownloads" Text="{Binding DownloadsText}" FontSize="12" Foreground="{DynamicResource Muted}" />
+            </StackPanel>
+            <TextBlock x:Name="RowVersion" Text="{Binding VersionLabel}" FontSize="12" Foreground="{DynamicResource Muted}" TextTrimming="CharacterEllipsis" HorizontalAlignment="Right" Margin="0,3,0,0" ToolTip="{Binding VersionLabel}" />
+            <TextBlock x:Name="RowVersionComparison" FontSize="12" Visibility="Collapsed" TextTrimming="CharacterEllipsis" HorizontalAlignment="Right" Margin="0,3,0,0" ToolTip="{Binding VersionComparisonTooltip}"><Run Text="{Binding PreviousVersionText, Mode=OneWay}" Foreground="{DynamicResource Muted}" /><Run Text=" → " Foreground="{DynamicResource Muted}" /><Run Text="{Binding AvailableVersionText, Mode=OneWay}" Foreground="{DynamicResource State.Update}" /></TextBlock>
+          </StackPanel>
+          <TextBlock x:Name="RowInstalledState" Grid.Column="1" Text="{Binding InstallationStatusText}" Foreground="{Binding InstallationStatusColor}" FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+          <Button x:Name="RowInstall" Grid.Column="1" Tag="AddonInstallAction" Content="{Binding InstallationLabel}" Click="InstallAddon" IsEnabled="{Binding CanInstall}" BorderBrush="{Binding InstallActionBorder}" Background="{Binding InstallActionBackground}" Foreground="{Binding InstallActionForeground}" FontSize="12" FontWeight="SemiBold" Padding="10,6" MinWidth="100" Height="32" HorizontalAlignment="Right" />
+        </Grid>
       </Grid>
       <DataTemplate.Triggers>
-        <DataTrigger
-          Binding="{Binding DependencyStatusText}"
-          Value="">
-          <Setter
-            TargetName="RowDependencyStatus"
-            Property="Visibility"
-            Value="Collapsed" />
-        </DataTrigger>
-        <DataTrigger
-          Binding="{Binding CompactRows, RelativeSource={RelativeSource AncestorType=Window}}"
-          Value="True">
-          <Setter
-            TargetName="PreviewColumn"
-            Property="Width"
-            Value="56" />
-          <Setter
-            TargetName="RowPreview"
-            Property="Width"
-            Value="40" />
-          <Setter
-            TargetName="RowPreview"
-            Property="Height"
-            Value="40" />
-          <Setter
-            TargetName="RowTitle"
-            Property="FontSize"
-            Value="16" />
-          <Setter
-            TargetName="RowAuthor"
-            Property="Visibility"
-            Value="Collapsed" />
-          <Setter
-            TargetName="RowStats"
-            Property="FontSize"
-            Value="12" />
-          <Setter
-            TargetName="RowStats"
-            Property="Margin"
-            Value="0,4,0,0" />
-          <Setter
-            TargetName="RowDependencyStatus"
-            Property="Visibility"
-            Value="Collapsed" />
-          <Setter
-            TargetName="RowVersion"
-            Property="FontSize"
-            Value="13" />
-          <Setter
-            TargetName="RowInstall"
-            Property="FontSize"
-            Value="12" />
-          <Setter
-            TargetName="RowInstall"
-            Property="Padding"
-            Value="12,6" />
-          <Setter
-            TargetName="RowInstall"
-            Property="MinWidth"
-            Value="100" />
-          <Setter
-            TargetName="RowInstall"
-            Property="Margin"
-            Value="0,4,0,0" />
-        </DataTrigger>
+        <DataTrigger Binding="{Binding HasVersionComparison}" Value="True"><Setter TargetName="RowVersion" Property="Visibility" Value="Collapsed" /><Setter TargetName="RowVersionComparison" Property="Visibility" Value="Visible" /></DataTrigger>
+        <DataTrigger Binding="{Binding DependencyStatusText}" Value=""><Setter TargetName="RowDependencyStatus" Property="Visibility" Value="Collapsed" /></DataTrigger>
+        <DataTrigger Binding="{Binding CanInstall}" Value="False"><Setter TargetName="RowInstalledState" Property="Visibility" Value="Visible" /></DataTrigger>
       </DataTemplate.Triggers>
     </DataTemplate>
-    <DataTemplate x:Key="AddonTilesTemplate">
-      <Grid Background="Transparent" ClipToBounds="True">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="80" />
-          <RowDefinition Height="48" />
-          <RowDefinition Height="40" />
-          <RowDefinition Height="*" />
-          <RowDefinition Height="38" />
-        </Grid.RowDefinitions>
-        <local:PreviewThumbnail AddonId="{Binding PreviewId}" CategoryId="{Binding DisplayCategoryId}" Width="72" Height="72" HorizontalAlignment="Center" VerticalAlignment="Top" />
-        <TextBlock Grid.Row="1" Text="{Binding DisplayName}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="44" Margin="0,4,0,0" />
-        <StackPanel Grid.Row="2" Margin="0,4,0,0">
-          <TextBlock FontSize="13" Foreground="{DynamicResource Theme.7DDDC0}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"><Run Text="↓ " /><Run Text="{Binding DownloadsText, Mode=OneWay}" /></TextBlock>
-          <TextBlock Text="{Binding UpdatedText}" FontSize="12" Foreground="{DynamicResource Muted}" Margin="0,3,0,0" />
-        </StackPanel>
-        <TextBlock x:Name="TileHealth" Grid.Row="3" Text="{Binding DependencyStatusText}" Foreground="{Binding DependencyStatusColor}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-        <Button x:Name="TileInstall"  Grid.Row="4" Content="{Binding InstallationLabel}" IsEnabled="{Binding CanInstall}" Click="InstallAddon" Padding="8,6" VerticalAlignment="Bottom" Tag="AddonInstallAction" Background="{Binding InstallActionBackground}" Foreground="{Binding InstallActionForeground}" FontSize="13" FontWeight="SemiBold" />
-      </Grid>
-      <DataTemplate.Triggers>
-        <DataTrigger Binding="{Binding DependencyStatusText}" Value=""><Setter TargetName="TileHealth" Property="Visibility" Value="Collapsed" /></DataTrigger>
-      </DataTemplate.Triggers>
-    </DataTemplate>
-    <ItemsPanelTemplate
-      x:Key="AddonCompactPanel">
-      <VirtualizingStackPanel />
-    </ItemsPanelTemplate>
-    <ItemsPanelTemplate
-      x:Key="AddonTilesPanel">
-      <local:AdaptiveTilePanel
-        TileHeight="280" PreferredColumns="{DynamicResource Collection.TileColumns}" />
-    </ItemsPanelTemplate>
+    <ItemsPanelTemplate x:Key="AddonCompactPanel"><VirtualizingStackPanel /></ItemsPanelTemplate>
   </Window.Resources>
   <DockPanel Background="{DynamicResource Theme.10131B}">
     <Border x:Name="TitleBarSurface" DockPanel.Dock="Top" Height="36" Background="{DynamicResource Theme.10131B}">
       <Grid>
-        <Border x:Name="SidebarCaptionBackground" HorizontalAlignment="Left" Width="76" Background="{DynamicResource Theme.151923}" BorderBrush="{DynamicResource Theme.252A36}" BorderThickness="0,0,1,0" />
+        <Border x:Name="SidebarCaptionBackground" HorizontalAlignment="Left" Width="76" Background="{DynamicResource Theme.151923}" BorderBrush="{DynamicResource Theme.252A36}" BorderThickness="0,0,1,0" ClipToBounds="True">
+          <Grid x:Name="CaptionIdentity" Margin="6,0,2,0" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="16" /><ColumnDefinition Width="3" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+            <Image x:Name="CaptionBread" Width="16" Height="16" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"><Image.Source><BitmapImage UriSource="Assets/boolka.png" DecodePixelWidth="32" /></Image.Source></Image>
+            <TextBlock x:Name="CaptionLabel" Grid.Column="2" Text="Boolka" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource Theme.E9EDF5}" TextTrimming="CharacterEllipsis" />
+          </Grid>
+        </Border>
       <DockPanel>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
           <Button x:Name="MinimizeCaptionButton" Style="{StaticResource CaptionButton}" Click="MinimizeWindow" AutomationProperties.Name="{DynamicResource Ui.0F0CEC10ABAC3795}" ><local:LucideIcon Icon="minus" Width="16" Height="16" /></Button>
@@ -257,7 +96,7 @@
             <Button.Style><Style TargetType="Button" BasedOn="{StaticResource CaptionButton}"><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#C42B1C" /><Setter Property="Foreground" Value="White" /></Trigger></Style.Triggers></Style></Button.Style>
           </Button>
         </StackPanel>
-        <TextBlock Text="boolka" Margin="16,0,0,0" VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource Theme.E9EDF5}" />
+        <Border Background="Transparent" />
       </DockPanel>
       </Grid>
     </Border>
@@ -292,18 +131,16 @@
         </Grid.RowDefinitions>
         <StackPanel>
           <Grid>
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
               <ColumnDefinition
                 Width="*" />
               <ColumnDefinition
                 Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock
-              x:Name="SidebarBrand"
-              Text="boolka"
-              FontSize="28"
-              FontWeight="SemiBold"
-              VerticalAlignment="Center" />
+            <StackPanel x:Name="SidebarIdentity" Orientation="Horizontal" VerticalAlignment="Center">
+<TextBlock x:Name="SidebarBrand" Text="Boolka" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </StackPanel>
             <Button
               x:Name="SidebarToggle"
               Grid.Column="1"
@@ -399,21 +236,21 @@
         </StackPanel>
         <StackPanel
           Grid.Row="2" Height="348">
-          <Button x:Name="LaunchButton" Foreground="{DynamicResource Theme.7DDDC0}" Height="44" Padding="0" Margin="0,0,0,8" Click="LaunchEso" AutomationProperties.Name="Launch ESO">
+          <Button x:Name="LaunchButton" Foreground="{DynamicResource Muted}" Height="44" Padding="0" Margin="0,0,0,8" Click="LaunchEso" AutomationProperties.Name="Launch ESO">
             <Button.ContextMenu><ContextMenu><MenuItem Header="ESO launch settings" Click="ConfigureLaunch" /></ContextMenu></Button.ContextMenu>
-            <StackPanel Orientation="Horizontal"><local:LucideIcon Icon="play" Width="32" Height="22" /><TextBlock x:Name="LaunchLabel" Text="ESO" Margin="12,0,0,0" VerticalAlignment="Center" /></StackPanel>
+            <StackPanel Orientation="Horizontal"><local:LucideIcon x:Name="LaunchIcon" Icon="play" IsFilled="True" Foreground="{DynamicResource State.Update}" Width="32" Height="22" /><TextBlock x:Name="LaunchLabel" Text="ESO" Margin="12,0,0,0" VerticalAlignment="Center" /></StackPanel>
           </Button>
-          <Button x:Name="SupportButton" Height="44" Padding="0" Margin="0,0,0,8" Foreground="#FF79C6"
+          <Button x:Name="SupportButton" Height="44" Padding="0" Margin="0,0,0,8" Foreground="{DynamicResource State.Accent}"
                   Click="OpenDonation" AutomationProperties.Name="{DynamicResource Ui.3B024CCE3B598E9A}">
             <Button.Style>
               <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Style.Triggers>
-                  <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#1FFF79C6" /></Trigger>
+                  <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource State.SelectionBackground}" /></Trigger>
                 </Style.Triggers>
               </Style>
             </Button.Style>
             <StackPanel Orientation="Horizontal">
-              <local:LucideIcon Icon="heart" Width="32" Height="22" />
+              <local:LucideIcon Icon="heart" IsFilled="True" Width="32" Height="22" />
               <TextBlock x:Name="SupportLabel" Text="{DynamicResource Ui.0A3173E3188C6979}" Margin="12,0,0,0" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
@@ -421,7 +258,7 @@
                   AutomationProperties.Name="{DynamicResource Ui.B22AE3D8FB8F72DD}" AutomationProperties.HelpText="{DynamicResource Ui.60395C6C8515CE22}">
             <StackPanel Orientation="Horizontal">
               <local:LucideIcon Icon="refresh-cw" Width="32" Height="22" />
-              <TextBlock x:Name="AppUpdateLabel" Text="{DynamicResource Ui.B22AE3D8FB8F72DD}" Margin="12,0,0,0" VerticalAlignment="Center" />
+              <TextBlock x:Name="AppUpdateLabel" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Text="{DynamicResource Ui.B22AE3D8FB8F72DD}" Margin="12,0,0,0" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
           <Button x:Name="GitHubButton" Height="44" Padding="0" Margin="0,0,0,8" Click="OpenGitHub" AutomationProperties.Name="GitHub">
@@ -448,7 +285,7 @@
             x:Name="SidebarFooter"
             Margin="4,0,0,0">
             <TextBlock
-              Text="{DynamicResource Ui.205800635DB91E89}"
+              Text="{DynamicResource Ui.A15275FE3C16D86E}"
               Foreground="{DynamicResource Theme.B9A9F4}"
               FontSize="12" />
             <TextBlock
@@ -489,22 +326,22 @@
             <RowDefinition
               Height="*" />
           </Grid.RowDefinitions>
-          <Border
+          <Border x:Name="FolderCard"
             Grid.Row="1"
             Background="{DynamicResource Theme.1B2030}"
             CornerRadius="{DynamicResource Theme.Radius12}"
-            Padding="18"
-            Margin="0,0,0,20">
+            Padding="12,8"
+            Margin="0,0,0,12">
             <DockPanel>
               <Button
-                x:Name="ChooseFolderButton"
+                x:Name="ChooseFolderButton" Height="32" Padding="10,6"
                 DockPanel.Dock="Right"
                 Content="{DynamicResource Ui.88D4B06D5629E51D}"
                 Click="ChooseFolder"
                 Background="Transparent"
                 Foreground="{DynamicResource Theme.E9EDF5}"
-                Margin="15,0,0,0" />
-              <Button x:Name="OpenAddonsFolderButton" DockPanel.Dock="Right" Click="OpenAddonsFolder" Margin="12,0,0,0" />
+                Margin="10,0,0,0" />
+              <Button x:Name="OpenAddonsFolderButton" Height="32" Padding="10,6" DockPanel.Dock="Right" Click="OpenAddonsFolder" Margin="8,0,0,0" />
               <StackPanel
                 VerticalAlignment="Center">
                 <TextBlock
@@ -514,7 +351,7 @@
                   x:Name="FolderLabel"
                   Text="{DynamicResource Ui.CEF7F14B80911156}"
                   Foreground="{DynamicResource Muted}"
-                  Margin="0,6,0,0"
+                  Margin="0,3,0,0"
                   TextWrapping="Wrap" />
               </StackPanel>
             </DockPanel>
@@ -621,18 +458,6 @@
                     Content="{DynamicResource Ui.B69CB65F19499A0E}" />
                 </ComboBox>
                 <ComboBox x:Name="CategoryFilterBox" local:CategorySearch.Enabled="True" Style="{StaticResource FilterBox}" Width="190" Margin="0,0,8,6" Visibility="Collapsed" SelectionChanged="CategoryChanged"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding}"><TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Setter Property="TextWrapping" Value="Wrap" /><Style.Triggers><DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ComboBoxItem}}" Value="{x:Null}"><Setter Property="TextWrapping" Value="NoWrap" /><Setter Property="TextTrimming" Value="CharacterEllipsis" /></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></DataTemplate></ComboBox.ItemTemplate></ComboBox>
-                <Button
-                  x:Name="CompactButton"
-                  Content="{DynamicResource Ui.93FD1E0F9FEB3098}"
-                  Click="ShowCompact"
-                  Margin="0,0,4,6"
-                  Padding="12,8" />
-                <Button
-                  x:Name="CardsButton"
-                  Content="{DynamicResource Ui.93E97A4ADC2B26A1}"
-                  Click="ShowCards"
-                  Margin="0,0,0,6"
-                  Padding="12,8" />
                 <StackPanel Orientation="Horizontal">
                 <Button x:Name="ShrinkCollectionButton" Click="ShrinkCollection" Width="40" Height="42" Margin="8,0,0,6" Padding="0" AutomationProperties.Name="Decrease item size"><local:LucideIcon Icon="minus" /></Button>
                 <TextBlock x:Name="CollectionScaleLabel" VerticalAlignment="Center" Margin="8,0,8,6" />
@@ -646,7 +471,7 @@
             <Grid
               Margin="0">
               <ListBox
-                x:Name="AddonList" FocusVisualStyle="{x:Null}" ScrollViewer.ScrollChanged="CollectionViewportChanged"
+                x:Name="AddonList" FocusVisualStyle="{x:Null}"
                 PreviewMouseWheel="AddonListMouseWheel"
                 Background="Transparent"
                 BorderThickness="0"
@@ -669,18 +494,6 @@
                     <Setter
                       Property="ItemsPanel"
                       Value="{StaticResource AddonCompactPanel}" />
-                    <Style.Triggers>
-                      <DataTrigger
-                        Binding="{Binding CompactRows, RelativeSource={RelativeSource AncestorType=Window}}"
-                        Value="False">
-                        <Setter
-                          Property="ItemTemplate"
-                          Value="{StaticResource AddonTilesTemplate}" />
-                        <Setter
-                          Property="ItemsPanel"
-                          Value="{StaticResource AddonTilesPanel}" />
-                      </DataTrigger>
-                    </Style.Triggers>
                   </Style>
                 </ListBox.Style>
                 <ListBox.ItemContainerStyle>
@@ -701,15 +514,6 @@
                         <ContextMenu />
                       </Setter.Value>
                     </Setter>
-                    <Style.Triggers>
-                      <DataTrigger
-                        Binding="{Binding CompactRows, RelativeSource={RelativeSource AncestorType=Window}}"
-                        Value="False">
-                        <Setter
-                          Property="Margin"
-                          Value="0,0,10,10" />
-                      </DataTrigger>
-                    </Style.Triggers>
                   </Style>
                 </ListBox.ItemContainerStyle>
               </ListBox>
@@ -797,7 +601,7 @@
                 Content="{Binding InstallationLabel}"
                 IsEnabled="{Binding CanInstall}"
                 Click="InstallAddon"
-                Tag="AddonInstallAction" Background="{Binding InstallActionBackground}"
+                Tag="AddonInstallAction" BorderBrush="{Binding InstallActionBorder}" Background="{Binding InstallActionBackground}"
                 Foreground="{Binding InstallActionForeground}"
                 Margin="0,0,8,8"
                 Padding="22,10">
@@ -876,7 +680,7 @@
                       FontSize="11" />
                     <TextBlock
                       x:Name="DetailDownloads"
-                      Foreground="{DynamicResource Theme.7DDDC0}"
+                      Foreground="{DynamicResource Muted}"
                       FontSize="24"
                       FontWeight="SemiBold"
                       Margin="0,5,0,0" />
@@ -913,6 +717,7 @@
                       TextWrapping="Wrap"
                       FontSize="16"
                       Margin="0,8,0,0" />
+                    <TextBlock Text="{Binding InstallationStatusText}" Foreground="{Binding InstallationStatusColor}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
                   </StackPanel>
                 </Border>
               </WrapPanel>                </StackPanel>
@@ -1076,7 +881,7 @@
                 Margin="8,8,0,0" />
             </WrapPanel>
           </DockPanel>
-          <ProgressBar x:Name="OperationProgress" Minimum="0" Maximum="100" Height="5" Margin="0,10,0,0" Visibility="Collapsed" Foreground="{DynamicResource Theme.B7A4FF}" Background="{DynamicResource Theme.252B39}" />
+          <ProgressBar x:Name="OperationProgress" Minimum="0" Maximum="100" Height="5" Margin="0,10,0,0" Visibility="Collapsed" Foreground="{DynamicResource State.Accent}" Background="{DynamicResource Theme.252B39}" />
           <ScrollViewer
             MaxHeight="64"
             VerticalScrollBarVisibility="Auto"

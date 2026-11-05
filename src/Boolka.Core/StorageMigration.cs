@@ -24,7 +24,7 @@ internal static class StorageMigration
         BackupFiles.Check(previous); BackupFiles.Check(target);
         if (!Directory.Exists(previous)) return;
         var parent = Path.GetDirectoryName(target)!;
-        if (File.Exists(target)) throw new IOException("Путь boolka занят файлом: " + target);
+        if (File.Exists(target)) throw new IOException("Путь Boolka занят файлом: " + target);
         var migrationLock = Path.Combine(parent, ".boolka-migration.lock");
         BackupFiles.Check(migrationLock);
         using var migration = new FileStream(migrationLock, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);

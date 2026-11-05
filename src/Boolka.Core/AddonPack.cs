@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Security.Cryptography;
@@ -94,6 +94,14 @@ public static class PackFile
 
 public static class PackPlanner
 {
+    public static AddonPack MissingOnly(AddonPack pack, IReadOnlyList<Addon> catalog, IReadOnlyList<Addon> installed)
+    {
+        var present = AddonMatcher.Compare(installed, catalog, true)
+            .Where(x => x.CatalogAddon?.CatalogId is > 0)
+            .Select(x => x.CatalogAddon!.CatalogId!.Value).ToHashSet();
+        return pack with { Addons = pack.Addons.Where(x => !present.Contains(x.Id)).ToArray() };
+    }
+
     public static PackPlan Build(AddonPack pack, IReadOnlyList<Addon> catalog, IReadOnlyList<Addon> installed, IReadOnlySet<long> ignored)
     {
         PackFile.Validate(pack);

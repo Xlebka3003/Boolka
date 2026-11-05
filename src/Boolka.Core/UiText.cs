@@ -16,9 +16,10 @@ public static class UiText
     // Оригинальный русский текст служит ключом; содержимое аддонов сюда не передаётся.
     public static string Get(string text)
     {
-        static string Brand(string value) => value.Replace("Boolka", "boolka", StringComparison.Ordinal);
+        static string Brand(string value) => System.Text.RegularExpressions.Regex.Replace(value, @"(?<![.\w/])boolka(?!\w|/|\.\w)", "Boolka").Replace(" · ", " | ", StringComparison.Ordinal);
         if (Language == "ru") return Brand(text);
         if (English.TryGetValue(text, out var translated)
+            || English.TryGetValue(text.Replace("Boolka", "boolka", StringComparison.Ordinal), out translated)
             || English.TryGetValue(text.Replace("boolka", "Boolka", StringComparison.Ordinal), out translated)) return Brand(Language == "en" ? translated : AdditionalTranslations.Get(translated, Language));
         const string prototype = "ПРОТОТИП / ";
         return text.StartsWith(prototype, StringComparison.Ordinal) ? AdditionalTranslations.Get("PROTOTYPE", Language) + " / " + text[prototype.Length..] : Brand(text);
@@ -120,6 +121,8 @@ public static class UiText
         ["Не удалось запустить программу."] = "Could not start program.",
         ["Код завершения: "] = "Exit code: ",
         ["Базы модов и сведения"] = "Addon databases and information",
+        ["Запустить ESO"] = "Launch ESO",
+        ["Запускаем…"] = "Starting…",
         ["Запускаем: "] = "Starting: ",
         ["Пропущено: "] = "Skipped: ",
         ["HarvestMap: повторный запуск пропускается, пока файлы базы и аддона не изменились."] = "HarvestMap: subsequent runs are skipped until the database or addon files change.",
@@ -211,6 +214,8 @@ public static class UiText
         ["Мои аддоны ESO"] = "My ESO addons",
         ["Автор (необязательно)"] = "Author (optional)",
         ["Описание (необязательно)"] = "Description (optional)",
+        ["Проверить выбранные"] = "Review selected",
+        ["Состав и библиотеки выбранных аддонов будут проверены заново перед установкой."] = "Selected addons and their dependencies will be reviewed again before installation.",
         ["Выбрать все"] = "Select all",
         ["Сохранить набор"] = "Save pack",
         ["Установить недостающие"] = "Install missing",
@@ -389,6 +394,7 @@ public static class UiText
         ["Обновить"] = "Update",
         ["Установлен"] = "Installed",
         ["Пропущен"] = "Ignored",
+        ["Удалить"] = "Delete",
         ["Удалить аддон"] = "Uninstall addon",
         ["Переустановить"] = "Reinstall",
         ["Не игнорировать обновления"] = "Allow updates",

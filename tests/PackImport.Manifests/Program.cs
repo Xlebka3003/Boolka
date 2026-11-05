@@ -1,4 +1,4 @@
-﻿using Boolka;
+using Boolka;
 using System.IO.Compression;
 using System.Security.Cryptography;
 var root=Path.Combine(AppContext.BaseDirectory,"fixtures",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);
@@ -91,6 +91,26 @@ Check(sharedPlan.IsReady && sharedPlan.Packages.Any(p=>p.CatalogId==99002) && sh
 Check(!DependencyResolver.Build(sharedRoot,[sharedRoot,obsoleteLibrary],[]).IsReady,"no candidate meeting minimum remains blocked");
 Check(!DependencyResolver.Build(sharedRoot,[sharedRoot,matchingLibrary,obsoleteLibrary with {PackageModules=[new("SharedLib","25",[],true)]}],[]).IsReady,"multiple suitable candidates remain ambiguous");
 Check(!DependencyResolver.Build(sharedRoot with {PackageModules=[new("SharedRoot","1",["SharedLib"])]},[sharedRoot,matchingLibrary,obsoleteLibrary],[]).IsReady,"no-minimum requirement does not guess a project");
+
+// Выбор и повтор импорта проверяем только на изолированных папках.
+var selectionCatalog = preparation.Catalog.Append(independent).ToArray();
+var selectedOnly = partialPack with { Addons = [new(4, "Independent")] };
+var selectedPreview = await PackArchivePlanner.PrepareAsync(selectedOnly, selectionCatalog, [], new HashSet<long>(),
+    new Dictionary<long, string>(), x => Task.FromResult(x.CatalogId == 4 ? independentZip : paths[x.CatalogId!.Value]), default);
+Check(selectedPreview.Plan.Plan!.Packages.Select(x => x.CatalogId).SequenceEqual(new long?[] {4}),
+    "unchecked root and its libraries are excluded from selected import");
+var retryTarget = Path.Combine(root, "Retry", "AddOns"); Directory.CreateDirectory(retryTarget);
+await new SafeInstaller().InstallAsync(selectedPreview.Plan.Plan!, new Dictionary<long,string> { [4] = independentZip }, retryTarget, default, allowReplacement:false);
+var retryInstalled = (await new EsoProvider().ScanAsync(retryTarget)).Addons;
+var retryPack = PackPlanner.MissingOnly(partialPack, selectionCatalog, retryInstalled);
+Check(retryPack.Addons.Count == 1 && retryPack.Addons[0].Id == 1,
+    "retry removes successfully installed root and keeps only missing root");
+var retryPrepared = await PackArchivePlanner.PrepareAsync(retryPack, selectionCatalog, retryInstalled, new HashSet<long>(),
+    new Dictionary<long,string>(), x => Task.FromResult(paths[x.CatalogId!.Value]), default);
+Check(retryPrepared.Plan.Plan!.Packages.Select(x => x.CatalogId).ToHashSet().SetEquals(new long?[] {1,2,3}),
+    "retry includes remaining root and required transitive libraries only");
+Check(PackPlanner.MissingOnly(selectedOnly, selectionCatalog, retryInstalled).Addons.Count == 0,
+    "fully installed retry has no remaining roots");
 
 sealed class FixtureHandler(IReadOnlyDictionary<long, string> paths) : System.Net.Http.HttpMessageHandler
 {

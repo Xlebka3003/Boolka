@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 
 namespace Boolka;
 
@@ -22,7 +22,7 @@ public partial class MainWindow
                     finally { startupAutoUpdating = false; }
                 }, lifetime.Token);
             if (result == StartupUpdateOutcome.GameRunning)
-                SetStatus(UiText.Get("Автообновление пропущено: закройте ESO и нажмите «Обновить всё»."), needsAttention: true);
+                SetStatus(UiText.Get("Автообновление пропущено: закройте ESO и нажмите «Обновить всё»."), warning: true);
         }
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception or InvalidOperationException)
