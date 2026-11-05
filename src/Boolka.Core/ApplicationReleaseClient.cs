@@ -10,7 +10,7 @@ internal sealed record ApplicationRelease(Version Version, Uri Download, long Si
 
 internal sealed class ApplicationReleaseClient : IDisposable
 {
-    internal const string Repository = "Xlebka3003/boolka";
+    internal const string Repository = "Xlebka3003/Boolka";
     internal const long MaximumDownload = 200L * 1024 * 1024;
     private readonly HttpClient client;
 
@@ -62,7 +62,10 @@ internal sealed class ApplicationReleaseClient : IDisposable
         var digest = asset.GetProperty("digest").GetString() ?? "";
         var address = asset.GetProperty("browser_download_url").GetString();
         var expected = $"https://github.com/{Repository}/releases/download/v{version}/{name}";
-        if (size is <= 0 or > MaximumDownload || address != expected
+        // При смене регистра имени GitHub меняет адреса файлов в API.
+        // Допускаем только два имени нашего репозитория, не меняя регистр тега или файла.
+        var legacy = $"https://github.com/Xlebka3003/boolka/releases/download/v{version}/{name}";
+        if (size is <= 0 or > MaximumDownload || (address != expected && address != legacy)
             || !Regex.IsMatch(digest, "^sha256:[0-9a-fA-F]{64}$", RegexOptions.CultureInvariant))
             throw new InvalidDataException("Неверные сведения об архиве обновления.");
         return new(version, new Uri(expected), size, digest[7..]);

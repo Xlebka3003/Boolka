@@ -10,7 +10,7 @@
 
 ## Установка
 
-1. Скачайте **Windows x64 ZIP** из [последнего релиза](https://github.com/Xlebka3003/boolka/releases/latest).
+1. Скачайте **Windows x64 ZIP** из [последнего релиза](https://github.com/Xlebka3003/Boolka/releases/latest).
 2. Распакуйте весь архив и запустите `boolka.exe`.
 3. Выберите папку `Документы\Elder Scrolls Online\live\AddOns`.
 

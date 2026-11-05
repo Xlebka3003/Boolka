@@ -4,7 +4,7 @@
     <StartupObject>Boolka.Program</StartupObject>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <Version>0.42.13</Version>
+    <Version>0.42.14</Version>
     <AssemblyName>boolka</AssemblyName>
     <RootNamespace>Boolka</RootNamespace>
     <Product>Boolka</Product>

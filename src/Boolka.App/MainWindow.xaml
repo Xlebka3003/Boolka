@@ -285,7 +285,7 @@
             x:Name="SidebarFooter"
             Margin="4,0,0,0">
             <TextBlock
-              Text="{DynamicResource Ui.A15275FE3C16D86E}"
+              Text="{DynamicResource Ui.7DD704CE90283D3C}"
               Foreground="{DynamicResource Theme.B9A9F4}"
               FontSize="12" />
             <TextBlock

@@ -8,7 +8,7 @@ public partial class MainWindow
     // Адрес задан владельцем приложения; открывается только после нажатия пользователя.
     internal const string DonationUrl = "https://boosty.to/xlebka/donate";
 
-    internal const string GitHubUrl = "https://github.com/Xlebka3003/boolka";
+    internal const string GitHubUrl = "https://github.com/Xlebka3003/Boolka";
 
     private void OpenGitHub(object sender, RoutedEventArgs e)
     {

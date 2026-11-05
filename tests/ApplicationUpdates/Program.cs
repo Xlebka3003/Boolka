@@ -15,11 +15,16 @@ void Check(bool result, string message) { if (!result) throw new Exception(messa
 void Reject(Action action, string message) { try { action(); } catch (Exception e) when (e is IOException or InvalidDataException or UnauthorizedAccessException or JsonException or InvalidOperationException or KeyNotFoundException) { Console.WriteLine("PASS " + message); return; } throw new Exception("Accepted: " + message); }
 async Task RejectAsync(Func<Task> action, string message) { try { await action(); } catch (Exception e) when (e is IOException or InvalidDataException or HttpRequestException or OperationCanceledException) { Console.WriteLine("PASS " + message); return; } throw new Exception("Accepted: " + message); }
 byte[] Release(string version = "2.0.0", string? url = null, string? digest = null, bool draft = false, bool prerelease = false, bool duplicate = false, string? name = null) {
- var asset = new { name = name ?? $"boolka-{version}-windows-x64-standalone.zip", size = 4, digest = digest ?? "sha256:" + Convert.ToHexString(SHA256.HashData(new byte[]{1,2,3,4})), browser_download_url = url ?? $"https://github.com/Xlebka3003/boolka/releases/download/v{version}/boolka-{version}-windows-x64-standalone.zip" };
+ var asset = new { name = name ?? $"boolka-{version}-windows-x64-standalone.zip", size = 4, digest = digest ?? "sha256:" + Convert.ToHexString(SHA256.HashData(new byte[]{1,2,3,4})), browser_download_url = url ?? $"https://github.com/Xlebka3003/Boolka/releases/download/v{version}/boolka-{version}-windows-x64-standalone.zip" };
  return JsonSerializer.SerializeToUtf8Bytes(new { tag_name = "v" + version, draft, prerelease, assets = duplicate ? new[]{asset,asset} : new[]{asset} });
 }
 var current = new Version(1,0,0);
 Check(ApplicationReleaseClient.Parse(Release(), current)?.Version == new Version(2,0,0), "new stable release accepted");
+Check(ApplicationReleaseClient.Parse(Release(url:"https://github.com/Xlebka3003/boolka/releases/download/v2.0.0/boolka-2.0.0-windows-x64-standalone.zip"),current)?.Version==new Version(2,0,0),"legacy lowercase repository accepted");
+Reject(()=>ApplicationReleaseClient.Parse(Release(url:"https://github.com/Xlebka3003/Other/releases/download/v2.0.0/boolka-2.0.0-windows-x64-standalone.zip"),current),"different repository rejected");
+Reject(()=>ApplicationReleaseClient.Parse(Release(url:"https://github.com/Xlebka3003/Boolka/releases/download/V2.0.0/boolka-2.0.0-windows-x64-standalone.zip"),current),"tag case stays strict");
+Reject(()=>ApplicationReleaseClient.Parse(Release(url:"https://github.com/Xlebka3003/Boolka/releases/download/v2.0.0/Boolka-2.0.0-windows-x64-standalone.zip"),current),"asset case stays strict");
+
 Check(ApplicationReleaseClient.Parse(Release("0.9.0"), current) is null && ApplicationReleaseClient.Parse(Release("1.0.0"), current) is null, "older and equal versions do not light button");
 Check(ApplicationReleaseClient.Parse(Release(draft:true), current) is null && ApplicationReleaseClient.Parse(Release(prerelease:true), current) is null, "draft and prerelease ignored");
 Reject(()=>ApplicationReleaseClient.Parse(Release(url:"https://evil.test/payload.exe"), current), "foreign download URL rejected");

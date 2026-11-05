@@ -10,7 +10,7 @@ An addon manager for The Elder Scrolls Online on Windows.
 
 ## Installation
 
-1. Download the **Windows x64 ZIP** from the [latest release](https://github.com/Xlebka3003/boolka/releases/latest).
+1. Download the **Windows x64 ZIP** from the [latest release](https://github.com/Xlebka3003/Boolka/releases/latest).
 2. Extract the entire archive and run `boolka.exe`.
 3. Select your `Documents\Elder Scrolls Online\live\AddOns` folder.
 
