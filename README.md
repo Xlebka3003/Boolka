@@ -4,6 +4,8 @@
 
 Менеджер аддонов The Elder Scrolls Online для Windows.
 
+Связь и отзывы: Discord — **xlebka3003**.
+
 ## GIF
 
 ![Интерфейс Boolka](docs/screenshots/boolka-overview.gif)

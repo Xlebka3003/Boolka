@@ -4,6 +4,8 @@
 
 An addon manager for The Elder Scrolls Online on Windows.
 
+Contact and feedback: Discord — **xlebka3003**.
+
 ## GIF
 
 ![Boolka interface](docs/screenshots/boolka-overview.gif)
